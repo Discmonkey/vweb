@@ -11,4 +11,4 @@ sudo apt-get install \
   libnuma1 \
   libnuma-dev
 cd -
-cd third_party/ffmpeg && ./configure --disable-static --enable-shared --enable-gpl --disable-doc && make -j 4
+cd third_party/ffmpeg && ./configure --enable-static --disable-shared --enable-gpl --disable-doc && make -j 4
