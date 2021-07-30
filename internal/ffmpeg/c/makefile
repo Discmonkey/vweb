@@ -7,22 +7,22 @@ TARGET_TEST = test_ffmpeg
 SOURCE = src/test.c  # source files
 
 # where our local install of ffmpeg is located
-FFMPEG_ROOT = ../../..
-
+FFMPEG_ROOT = ../../../third_party/ffmpeg
+FR=-L$(FFMPEG_ROOT)/
 # the include path relative to the install
-INCLUDE = -I$(FFMPEG_ROOT)/third_party/ffmpeg/
+INCLUDE = -I$(FFMPEG_ROOT)
 
 # the libraries we are interested in linking to
-LIB_PATH = -L$(FFMPEG_ROOT)/libavformat
+LIB_PATH =  $(FR)libavformat $(FR)libavcodec $(FR)libswscale $(FR)libavutil $(FR)libavdevice $(FR)libswresample
 
 # the actual libraries
-LIBRARIES = -lavformat.a
+LIBRARIES = -lavformat -lavcodec -lswscale -lavutil -lavdevice -lswresample -lm -lz -ldl -lpthread
 
 .PHONY: all
 all: $(TARGET_TEST)
 
 $(TARGET_TEST): $(SOURCE)
-	$(CC) $(INCLUDE) $(LIB_PATH) $(LIBRARIES) -o $@ $^
+	$(CC) $(INCLUDE) $(LIB_PATH) -o $@ $^ $(LIBRARIES)
 # $(TARGET_LIB): $(OBJS)
 #	$(CC) ${LDFLAGS} -o $@ $^
 
