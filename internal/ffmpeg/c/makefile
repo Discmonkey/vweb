@@ -3,7 +3,7 @@ CFLAGS = -fPIC -Wall -Wextra -O2 -g  # C flags
 LDFLAGS = -shared   # linking flags
 RM = rm -f   # rm command
 TARGET_LIB = libtarget.so  # target lib
-TARGET_TEST = test_ffmpeg
+TARGET_TEST = build/test_ffmpeg
 SOURCE = src/test.c  # source files
 
 # where our local install of ffmpeg is located
