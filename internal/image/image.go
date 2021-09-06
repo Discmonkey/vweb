@@ -1,15 +1,16 @@
 package image
 
-type Dim int
-type Shape = []Dim
+type Shape struct {
+	s []int
+}
 
 type Aspect struct {
-	Width  Dim
-	Height Dim
+	Width  int
+	Height int
 }
 
 func (s *Shape) Aspect() Aspect {
 	return Aspect{
-		(*s)[1], (*s)[0],
+		s.s[1], s.s[0],
 	}
 }
