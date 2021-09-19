@@ -8,7 +8,7 @@ struct Stream {
 int main() {
     AVFormatContext *pFormatCtx = NULL;
 
-    char *f = "home/max/go/src/discmonkey/vweb/test/data/big_buck_bunny_1080_10s_1mb_h264.mp4";
+    char *f = "/home/max/go/src/discmonkey/vweb/test/data/big_buck_bunny_1080_10s_1mb_h264.mp4";
 
     if(avformat_open_input(&pFormatCtx, f,
                            NULL, NULL)!=0) {
