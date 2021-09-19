@@ -1,6 +1,6 @@
 package ffmpeg
 
-import "github.com/dismonkey/vweb/pkg/video"
+import "github.com/discmonkey/vweb/pkg/video"
 
 // Player implements the videoPlayer interface with a ffmpeg backend
 type Player struct {

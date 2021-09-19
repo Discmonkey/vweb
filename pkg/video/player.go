@@ -1,7 +1,7 @@
 package video
 
 import (
-	"github.com/dismonkey/vweb/internal/image"
+	"github.com/discmonkey/vweb/internal/image"
 	"github.com/pion/webrtc/v3"
 	"time"
 )

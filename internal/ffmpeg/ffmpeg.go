@@ -1,6 +1,6 @@
 package ffmpeg
 
-import "github.com/dismonkey/vweb/internal/image"
+import "github.com/discmonkey/vweb/internal/image"
 
 type ParameterSet struct {
 	Raw    []byte

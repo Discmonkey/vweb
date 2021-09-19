@@ -1,4 +1,4 @@
-module github.com/dismonkey/vweb
+module github.com/discmonkey/vweb
 
 go 1.14
 

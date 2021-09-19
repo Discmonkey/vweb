@@ -13,10 +13,10 @@ FR=-L$(FFMPEG_ROOT)/
 INCLUDE = -I$(FFMPEG_ROOT)
 
 # the libraries we are interested in linking to
-LIB_PATH =  $(FR)libavformat $(FR)libavcodec $(FR)libswscale $(FR)libavutil $(FR)libavdevice $(FR)libswresample
+LIB_PATH =  $(FR)libavformat $(FR)libavcodec $(FR)libswscale $(FR)libavutil $(FR)libavdevice $(FR)libswresample -L/usr/local/lib
 
 # the actual libraries
-LIBRARIES = -lavformat -lavcodec -lswscale -lavutil -lavdevice -lswresample -lm -lz -ldl -lpthread
+LIBRARIES = -lavformat -lavcodec -lswscale -lavutil -lavdevice -lswresample -lm -lz -ldl -lpthread -lvdpau -lva -lX11 -lbz2 -llzma -lva-drm -lva-x11
 
 .PHONY: all
 all: $(TARGET_TEST)
