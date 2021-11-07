@@ -4,57 +4,52 @@
 
 #define BUFFER_SIZE 4096;
 
-const int32_t kNotFound = -1;
+const int32_t k_not_found = -1;
 
 struct Stream {
     
 };
-int main() {
-    AVFormatContext *pFormatCtx = NULL;
 
-    AVFrame *frame;
+int main() {
+    AVFormatContext *p_format_context = NULL;
     AVPacket  *pkt;
 
     char *f = "../../../test/data/big_buck_bunny_1080_10s_1mb_h264.mp4";
-    if(avformat_open_input(&pFormatCtx, f,
-                           NULL, NULL)!=0) {
+    if(avformat_open_input(&p_format_context, f,NULL, NULL)!=0) {
 	    printf("could not open file\n");
         return -1; // Couldn't open file
     }
-    if(avformat_find_stream_info(pFormatCtx, NULL)<0) {
+
+    if(avformat_find_stream_info(p_format_context, NULL) < 0) {
         printf("could not open file\n");
 	    return -1; // Couldn't find stream information
     }
+
     if (!(pkt = av_packet_alloc())) {
         printf("could not allocate pkt\n");
         return -1;
     }
-    av_dump_format(pFormatCtx, 0, f, 0);
 
-    AVCodecContext *pCodecCtxOrig = NULL;
-    AVCodecContext *pCodecCtx = NULL;
+    av_dump_format(p_format_context, 0, f, 0);
 
-    int videoStreamIdx = kNotFound;
-    for (int i = 0; i < pFormatCtx->nb_streams; i++) {
-        if (pFormatCtx->streams[i]->codecpar->codec_type ==
-            AVMEDIA_TYPE_VIDEO) {
-            printf("found AVMEDIA_TYPE_VIDEO position: %d\n", i);
-            videoStreamIdx = i;
+    int video_stream_index = k_not_found;
+    for (int i = 0; i < p_format_context->nb_streams; i++) {
+        if (p_format_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            video_stream_index = i;
             break;
         }
     }
 
-    if (videoStreamIdx == kNotFound) {
+    if (video_stream_index == k_not_found) {
         printf("stream not found");
         return -1;
     }
 
-    AVStream * video = pFormatCtx->streams[videoStreamIdx];
-    AVCodec *p_codec = avcodec_find_decoder(video->codecpar->codec_id);
-    if (!p_codec) {
-        printf("codec not found");
-        return -1;
+    printf("video index is %d\n", video_stream_index);
+    while (av_read_frame(p_format_context, pkt) == 0) {
+        printf("%d\n", pkt->stream_index);
+        printf("%d\n", pkt->size);
+        printf("key frame? %d\n", (pkt->flags & AV_PKT_FLAG_KEY) > 0);
+        printf("\n");
     }
-
-
 }

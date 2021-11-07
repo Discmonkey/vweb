@@ -16,7 +16,7 @@ INCLUDE = -I$(FFMPEG_ROOT)
 LIB_PATH =  $(FR)libavformat $(FR)libavcodec $(FR)libswscale $(FR)libavutil $(FR)libavdevice $(FR)libswresample -L/usr/local/lib
 
 # the actual libraries
-LIBRARIES = -lavformat -lavcodec -lswscale -lavutil -lavdevice -lswresample -lm -lz -ldl -lpthread -lvdpau -lva -lX11 -lbz2 -llzma -lva-drm -lva-x11
+LIBRARIES = -lavformat -lavcodec -lswscale -lavutil -lavdevice -lswresample -lm -lz -ldl -lpthread #-lvdpau -lva -lX11 -lbz2 -llzma -lva-drm -lva-x11
 
 .PHONY: all
 all: $(TARGET_TEST)
