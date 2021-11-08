@@ -2,13 +2,7 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-#define BUFFER_SIZE 4096;
-
 const int32_t k_not_found = -1;
-
-struct Stream {
-    
-};
 
 int main() {
     AVFormatContext *p_format_context = NULL;
