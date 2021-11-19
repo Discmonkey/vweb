@@ -5,9 +5,12 @@
 #ifndef C_READ_PACKETS_H
 #define C_READ_PACKETS_H
 
+#include <stdbool.h>
+
 typedef struct Stream {
     void *context;
     int video_index;
+    void *packet;
 } Stream;
 
 typedef struct Error {
@@ -22,13 +25,14 @@ typedef struct StreamOrError {
 
 typedef struct Packet {
     bool is_key_frame;
+    int  size;
     void *data;
 } Packet;
 
 typedef struct PacketOrError {
     Packet *packet;
     Error *error;
-} Error;
+} PacketOrError;
 
 // safely free an error struct
 void free_error(Error *error);
