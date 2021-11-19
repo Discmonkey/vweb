@@ -2,6 +2,10 @@ package ffmpeg
 
 import "github.com/discmonkey/vweb/pkg/video"
 
+// #cgo LDFLAGS: -L${SRCDIR}/c/build -lpacket_reader
+// #include "c/src/packet_reader.h"
+import "C"
+
 // Player implements the videoPlayer interface with a ffmpeg backend
 type Player struct {
 }
