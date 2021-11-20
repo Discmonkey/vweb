@@ -18,13 +18,21 @@ void free_error(Error *error) {
 
 // safely free a stream struct
 void free_stream(Stream *stream) {
-    if (stream != NULL && stream->context != NULL) {
+    if (stream != NULL) {
+        if (stream->context != NULL) {
+            avformat_free_context((AVFormatContext *) stream->context);
+        }
 
+        if (stream->packet != NULL) {
+            av_packet_unref(((AVPacket *) stream->packet));
+        }
+
+        free(stream);
     }
 }
 
 // utility function for constructing an error
-Error* NewError(char *message, bool is_recoverable) {
+Error* new_error(char *message, bool is_recoverable) {
     Error *e = malloc(sizeof(Error));
     e->reason = av_strdup(message);
     e->can_recover = is_recoverable;
@@ -39,17 +47,17 @@ StreamOrError open_stream(char *url) {
     AVPacket *pkt;
     StreamOrError stream_or_error = {NULL, NULL};
     if (avformat_open_input(&p_format_context, url, NULL, NULL) < 0) {
-        stream_or_error.error = NewError("could not open stream", false);
+        stream_or_error.error = new_error("could not open stream", false);
         return stream_or_error;
     }
 
     if (avformat_find_stream_info(p_format_context, NULL) < 0) {
-        stream_or_error.error = NewError("could not find stream info", false);
+        stream_or_error.error = new_error("could not find stream info", false);
         return stream_or_error;
     }
 
     if (!(pkt = av_packet_alloc())) {
-        stream_or_error.error = NewError("could not allocate packet", true);
+        stream_or_error.error = new_error("could not allocate packet", true);
         return stream_or_error;
     }
 
@@ -62,7 +70,7 @@ StreamOrError open_stream(char *url) {
     }
 
     if (video_stream_index == -1) {
-        stream_or_error.error = NewError("video channel not found within mpeg stream", false);
+        stream_or_error.error = new_error("video channel not found within mpeg stream", false);
         return stream_or_error;
     }
 
@@ -89,6 +97,6 @@ PacketOrError next_packet(Stream *stream) {
        }
     }
 
-    packet_or_error.error = NewError("could not read packet from stream", true);
+    packet_or_error.error = new_error("could not read packet from stream", true);
     return packet_or_error;
 }
