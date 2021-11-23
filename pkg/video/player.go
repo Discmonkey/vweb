@@ -3,7 +3,6 @@ package video
 import (
 	"github.com/discmonkey/vweb/internal/image"
 	"github.com/pion/webrtc/v3"
-	"time"
 )
 
 type Encoding = string
@@ -20,7 +19,6 @@ type Count = uint64
 type Frame interface {
 	Aspect() (image.Aspect, error)
 	Bytes() []byte
-	Timestamp(Count) (time.Time, error)
 }
 
 // Player is a handle on some video source

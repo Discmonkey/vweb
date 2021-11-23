@@ -6,6 +6,7 @@
 #define C_READ_PACKETS_H
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct Stream {
     void *context;
