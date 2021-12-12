@@ -14,6 +14,7 @@ int main() {
         PacketOrError packet_or_error = next_packet(stream_or_error.stream);
 
         if (packet_or_error.error != NULL) {
+            printf("%s\n", packet_or_error.error->reason);
             break;
         }
 

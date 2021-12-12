@@ -11,7 +11,10 @@
 typedef struct Stream {
     void *context;
     int video_index;
-    void *packet;
+    void *av_packet;
+    void *re_packet;
+    // packet buffer points here
+    void *buffer;
 } Stream;
 
 typedef struct Error {
@@ -24,6 +27,7 @@ typedef struct StreamOrError {
     Error *error;
 } StreamOrError;
 
+// Two packets should never be used concurrently
 typedef struct Packet {
     bool is_key_frame;
     int  size;
