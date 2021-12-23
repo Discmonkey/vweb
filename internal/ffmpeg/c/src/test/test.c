@@ -3,7 +3,7 @@
 
 int main() {
 
-    char *f = "/home/max/go/src/vweb/test/data/big_buck_bunny_1080_10s_1mb_h264.mp4";
+    char *f = "/home/max/go/src/vweb/test/data/output.ts";
 
     StreamOrError stream_or_error = open_stream(f);
 

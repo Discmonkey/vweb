@@ -77,6 +77,7 @@ Error* new_error(char *message, bool is_recoverable) {
 // attempt to open video resource (file or video stream)
 // either the stream or the error will be set in the returned structure
 StreamOrError open_stream(char *url) {
+    printf("%s\n", url);
     AVFormatContext  *p_format_context = NULL;
     AVPacket *pkt;
     StreamOrError stream_or_error = {NULL, NULL};
@@ -84,7 +85,7 @@ StreamOrError open_stream(char *url) {
         stream_or_error.error = new_error("could not open stream", false);
         return stream_or_error;
     }
-
+    printf("avformat_open succeeded\n");
     if (avformat_find_stream_info(p_format_context, NULL) < 0) {
         stream_or_error.error = new_error("could not find stream info", false);
         return stream_or_error;
@@ -94,14 +95,19 @@ StreamOrError open_stream(char *url) {
         stream_or_error.error = new_error("could not allocate packet", true);
         return stream_or_error;
     }
+    printf("allocated packet successfully\n");
 
     int video_stream_index = -1;
+    printf("num streams %d\n", p_format_context->nb_streams);
     for (int i = 0; i < p_format_context->nb_streams; i++) {
+        printf("checking %d\n", i);
         if (p_format_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             video_stream_index = i;
             break;
         }
     }
+
+    printf("found video stream %d\n", video_stream_index);
 
     if (video_stream_index == -1) {
         stream_or_error.error = new_error("video channel not found within mpeg stream", false);
@@ -117,6 +123,7 @@ StreamOrError open_stream(char *url) {
     // buffer for packet data
     stream_or_error.stream->buffer = new_buffer();
 
+    printf("returning\n");
     return stream_or_error;
 }
 

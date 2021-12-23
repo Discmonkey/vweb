@@ -18,3 +18,6 @@ target_link_libraries(packet_reader PkgConfig::LIBAV)
 
 add_executable(packet_read_test src/test/test.c)
 target_link_libraries(packet_read_test packet_reader)
+
+add_executable(print_error src/test/print_error.c)
+target_link_libraries(print_error PkgConfig::LIBAV)

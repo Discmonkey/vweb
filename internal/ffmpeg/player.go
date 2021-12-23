@@ -33,6 +33,10 @@ func (f *Frame) Bytes() []byte {
 	return f.data
 }
 
+func (f *Frame) IsKey() bool {
+	return f.isKeyFrame
+}
+
 // NewPlayer attempts to open url using ffmpeg c bindings
 func NewPlayer(url string) (video.Player, error) {
 	cUrl := C.CString(url)

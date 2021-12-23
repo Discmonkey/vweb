@@ -19,6 +19,7 @@ type Count = uint64
 type Frame interface {
 	Aspect() (image.Aspect, error)
 	Bytes() []byte
+	IsKey() bool
 }
 
 // Player is a handle on some video source
