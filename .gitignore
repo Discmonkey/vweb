@@ -1,2 +1,3 @@
 .idea
 /internal/ffmpeg/c/build
+internal/ffmpeg/rust/packets/target/
