@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/discmonkey/vweb/internal/ffmpeg"
+	filestramer "github.com/discmonkey/vweb/internal/debug/player"
 	"github.com/discmonkey/vweb/pkg/endpoints/utils"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/pkg/media"
@@ -66,7 +66,8 @@ func Open(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		// Open a IVF file and start reading using our IVFReader
-		reader, err := ffmpeg.NewPlayer("/home/max/go/src/vweb/test/data/output.ts")
+		reader := filestramer.NewPlayer("/home/max/go/src/discmonkey/vweb/test/packets", true)
+		var err error = nil
 		if utils.HttpNotOk(400, w, "could not create player", err) {
 			return
 		}
@@ -77,15 +78,15 @@ func Open(w http.ResponseWriter, r *http.Request) {
 		// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
 		// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
 		for _ = range ticker.C {
-			frame, _, ivfErr := reader.Next()
+			frame, _, err := reader.Next()
 
-			if ivfErr != nil {
-				reader, _ = ffmpeg.NewPlayer("/home/max/go/src/vweb/test/data/output.ts")
-				continue
+			if err != nil {
+				fmt.Println(err)
+				break
 			}
 
-			if ivfErr = videoTrack.WriteSample(media.Sample{Data: frame.Bytes(), Duration: time.Millisecond * 33}); ivfErr != nil {
-				panic(ivfErr)
+			if err = videoTrack.WriteSample(media.Sample{Data: frame.Bytes(), Duration: time.Millisecond * 33}); err != nil {
+				panic(err)
 			}
 		}
 	}()

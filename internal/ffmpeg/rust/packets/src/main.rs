@@ -14,6 +14,9 @@
 //
 //   transcode-x264 input.flv output.mp4
 //   transcode-x264 input.mkv output.mkv 'preset=veryslow,crf=18'
+//
+// Output Directory
+//   /home/max/go/src/discmonkey/vweb/test/packets
 
 extern crate ffmpeg_next as ffmpeg;
 
@@ -164,7 +167,7 @@ fn main() {
     )
         .expect("invalid x264 options string");
 
-    eprintln!("x264 options: {:?}", x264_opts);
+    println!("x264 options: {:?}", x264_opts);
 
     ffmpeg::init().unwrap();
     log::set_level(log::Level::Info);
@@ -178,9 +181,11 @@ fn main() {
         .streams()
         .best(media::Type::Video)
         .map(|stream| stream.index());
+
     let mut stream_mapping: Vec<isize> = vec![0; ictx.nb_streams() as _];
     let mut ist_time_bases = vec![Rational(0, 0); ictx.nb_streams() as _];
     let mut ost_time_bases = vec![Rational(0, 0); ictx.nb_streams() as _];
+
     let mut transcoders = HashMap::new();
     let mut ost_index = 0;
     for (ist_index, ist) in ictx.streams().enumerate() {
@@ -247,7 +252,7 @@ fn main() {
                 packet.rescale_ts(ist_time_bases[ist_index], ost_time_base);
                 packet.set_position(-1);
                 packet.set_stream(ost_index as _);
-                packet.write_interleaved(&mut octx).unwrap();
+                packet.write(&mut octx).unwrap();
             }
         }
     }
