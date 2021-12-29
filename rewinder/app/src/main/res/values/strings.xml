@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Rewinder</string>
+    <string name="take_photo">Start Stream</string>
+</resources>

@@ -7,12 +7,16 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import android.media.MediaCodec
 
 class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
@@ -35,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         val cameraCaptureButton: Button = findViewById(R.id.camera_capture_button);
 
         // Set up the listener for take photo button
-        cameraCaptureButton.setOnClickListener { takePhoto() }
+        cameraCaptureButton.setOnClickListener { startStream() }
 
         outputDirectory = getOutputDirectory()
 
@@ -43,11 +47,43 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun takePhoto() {
+    private fun startStream() {
         Log.d("INFO", "click button pressed")
     }
 
-    private fun startCamera() {}
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener(Runnable {
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val viewFinder: androidx.camera.view.PreviewView = findViewById(R.id.viewFinder);
+
+
+            // Preview
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                }
+
+            // Select back camera as a default
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
+
+                // Bind use cases to camera
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview)
+
+            } catch(exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
+            }
+
+        }, ContextCompat.getMainExecutor(this))
+    }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
