@@ -31,10 +31,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var encoderRunning = false
-    private var udpOutputStream = UDPOutputStream(
-        Inet4Address.getByName("192.168.1.11") as Inet4Address, 8910)
-    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
-        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
+    private var udpOutputStream = UDPOutputStream("192.168.1.10", 9000)
+
+//    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
+//        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        val surface = encoder.getSurface()
 
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -77,13 +76,13 @@ class MainActivity : AppCompatActivity() {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-            val preview2 = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(
-                        encoder
-                    )
-                }
+//            val preview2 = Preview.Builder()
+//                .build()
+//                .also {
+//                    it.setSurfaceProvider(
+//                        encoder
+//                    )
+//                }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -94,7 +93,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, preview2)
+                    this, cameraSelector, preview)
 
 
             } catch(exc: Exception) {
