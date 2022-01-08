@@ -2,27 +2,39 @@ package com.example.rewinder
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaCodecList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
+import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.BufferedOutputStream
 import java.io.File
+import java.net.Inet4Address
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import android.media.MediaCodec
+
 
 class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    private var encoderRunning = false
+    private var udpOutputStream = UDPOutputStream(
+        Inet4Address.getByName("192.168.1.11") as Inet4Address, 8910)
+    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
+        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,25 +58,31 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-
     private fun startStream() {
-        Log.d("INFO", "click button pressed")
     }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val surface = encoder.getSurface()
 
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             val viewFinder: androidx.camera.view.PreviewView = findViewById(R.id.viewFinder);
 
-
             // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
+                }
+
+            val preview2 = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(
+                        encoder
+                    )
                 }
 
             // Select back camera as a default
@@ -76,7 +94,8 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
+                    this, cameraSelector, preview, preview2)
+
 
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -120,6 +139,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CameraXBasic"
+        private const val ERROR_TAG = "RewinderError"
+        private const val INFO_TAG = "RewinderInfo"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
