@@ -16,7 +16,6 @@ class UDPOutputStream(address: String, port : Int) : OutputStream() {
     private val thread = Thread(task)
     init {
         thread.start()
-        safeSend("hello!\n".toByteArray(), 0, 7)
     }
 
     class ThreadedWriter(private val address: String,

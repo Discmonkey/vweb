@@ -12,7 +12,7 @@ class UDPWriterCallback(private val outputStream: BufferedOutputStream): Callbac
     }
 
     override fun onOutputBufferAvailable(mediaCodec: MediaCodec, outputBufferIndex: Int, bufferInfo: MediaCodec.BufferInfo) {
-        Log.d("onOutputBufferAvailable", outputBufferIndex.toString())
+        Log.d("onOutputBufferAvailable", bufferInfo.size.toString())
         val outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex)
         val data = ByteArray(bufferInfo.size)
         outputBuffer?.get(data)
