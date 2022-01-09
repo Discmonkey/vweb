@@ -2,7 +2,6 @@ package com.example.rewinder
 
 import android.util.Log
 import java.io.OutputStream
-import java.lang.Math.random
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.Inet4Address
@@ -13,7 +12,7 @@ import kotlin.math.min
 class UDPOutputStream(address: String, port : Int) : OutputStream() {
     private val queue: BlockingQueue<DatagramPacket> = LinkedBlockingDeque();
     private val task = ThreadedWriter(address, port, queue)
-    private val maxSendLength = 256
+    private val maxSendLength = 1024
     private val thread = Thread(task)
     init {
         thread.start()
@@ -23,7 +22,6 @@ class UDPOutputStream(address: String, port : Int) : OutputStream() {
     class ThreadedWriter(private val address: String,
                          private val port : Int,
                          private val queue: BlockingQueue<DatagramPacket>): Runnable {
-
         @Volatile
         var running = true
         override fun run() {

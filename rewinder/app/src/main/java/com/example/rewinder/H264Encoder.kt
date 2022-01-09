@@ -26,13 +26,12 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
-
         mediaCodec.setCallback(callback)
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         inputSurface = mediaCodec.createInputSurface()
     }
 
-    fun start() {
+    private fun start() {
         mediaCodec.start()
     }
 
@@ -40,7 +39,7 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
         mediaCodec.stop()
     }
 
-    fun getSurface(): Surface? {
+    private fun getSurface(): Surface? {
         return inputSurface
     }
 
@@ -55,43 +54,10 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
         }
     }
 
-    fun onBuffer() {
-
-    }
-    fun encode(input: ByteArray) {
-        try {
-            val inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
-            if (inputBufferIndex >= 0) {
-                val inputBuffer = mediaCodec.getInputBuffer(inputBufferIndex)
-                inputBuffer?.clear()
-                inputBuffer?.put(input)
-                mediaCodec.queueInputBuffer(inputBufferIndex, 0,
-                    input.size, 0, 0)
-            }
-            val bufferInfo = MediaCodec.BufferInfo()
-            var outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0)
-            var data = ByteArray(0)
-
-            while (outputBufferIndex >= 0) {
-                val outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex)
-                if (data.size < bufferInfo.size) {
-                    data = ByteArray((bufferInfo.size))
-                }
-                outputBuffer?.get(data);
-                outputStream.write(data, 0, data.size);
-
-                mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
-                outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
-            }
-        } catch (t: Throwable) {
-            t.printStackTrace();
-        }
-
-    }
-
     class SimpleExecutor: Executor {
         override fun execute(p0: Runnable?) {
-            Log.d("executor", p0.toString())
+            Log.d("simple consumer", "starting to execute")
+            Thread(p0).start()
         }
     }
 
@@ -103,8 +69,8 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     }
 
     override fun onSurfaceRequested(request: SurfaceRequest) {
-        Log.d("onSurfaceRequestd", "called")
+        Log.d("onSurfaceRequested", "called")
+        this.start()
         getSurface()?.let { request.provideSurface(it, SimpleExecutor(), SimpleConsumer()) }
-
     }
 }

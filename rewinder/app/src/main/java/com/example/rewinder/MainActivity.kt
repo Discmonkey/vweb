@@ -33,8 +33,8 @@ class MainActivity : AppCompatActivity() {
     private var encoderRunning = false
     private var udpOutputStream = UDPOutputStream("192.168.1.10", 9000)
 
-//    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
-//        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
+    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
+        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,13 +76,13 @@ class MainActivity : AppCompatActivity() {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-//            val preview2 = Preview.Builder()
-//                .build()
-//                .also {
-//                    it.setSurfaceProvider(
-//                        encoder
-//                    )
-//                }
+            val encoderPreview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(
+                        encoder
+                    )
+                }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -93,10 +93,11 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
+                    this, cameraSelector, encoderPreview
+                )
 
 
-            } catch(exc: Exception) {
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
