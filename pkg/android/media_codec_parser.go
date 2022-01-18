@@ -22,7 +22,7 @@ func (p h264Parser) parse(con net.Conn, spsChan chan []byte, ppsChan chan []byte
 	prev := make([]byte, 1024)
 	ready := make(chan []byte)
 	go func() {
-		for n := -1; n >= 0; {
+		for n := 1; n >= 0; {
 			var err error
 			n, err = con.Read(prev)
 			if err != nil {

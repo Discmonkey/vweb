@@ -69,13 +69,6 @@ func NewPlayer(port int) (video.Player, error) {
 		router: video.NewRouter(newFrameSource),
 	}
 
-	for p.sps == nil || p.pps == nil {
-		select {
-		case p.pps = <-ppsC:
-		case p.sps = <-spsC:
-		}
-	}
-
 	go func() {
 		{
 			f := Frame{}
