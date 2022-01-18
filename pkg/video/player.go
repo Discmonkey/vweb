@@ -1,15 +1,13 @@
 package video
 
 import (
-	"github.com/discmonkey/vweb/internal/image"
 	"github.com/pion/webrtc/v3"
 )
 
-type Encoding = string
+type Type = string
 
 const (
-	H264 Encoding = webrtc.MimeTypeH264
-	JPEG          = "jpeg"
+	H264 Type = webrtc.MimeTypeH264
 )
 
 // Count is used for synchronization between video source and metadata
@@ -17,13 +15,14 @@ type Count = uint64
 
 // Frame is a single quantum of a some video stream/container
 type Frame interface {
-	Aspect() (image.Aspect, error)
-	Bytes() []byte
-	IsKey() bool
+	Bytes() ([]byte, error)
+	Count() (int, error)
 }
+
+type Unsubscribe = func()
 
 // Player is a handle on some video source
 type Player interface {
-	Next() (Frame, Count, error)
-	Encoding() (Encoding, error)
+	Play() (chan Frame, Unsubscribe, error)
+	Type() Type
 }

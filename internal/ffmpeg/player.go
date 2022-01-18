@@ -18,6 +18,11 @@ type Player struct {
 	count  video.Count
 }
 
+func (p *Player) Play() (chan video.Frame, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // Frame implements the video.Frame interface with a ffmpeg backend
 type Frame struct {
 	data       []byte
@@ -25,12 +30,18 @@ type Frame struct {
 	isKeyFrame bool
 }
 
-func (f *Frame) Aspect() (image.Aspect, error) {
-	return f.aspect, nil
+func (f *Frame) Bytes() ([]byte, error) {
+	//TODO implement me
+	return f.data, nil
 }
 
-func (f *Frame) Bytes() []byte {
-	return f.data
+func (f *Frame) Type() video.Type {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *Frame) Aspect() (image.Aspect, error) {
+	return f.aspect, nil
 }
 
 func (f *Frame) IsKey() bool {
