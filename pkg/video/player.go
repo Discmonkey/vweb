@@ -1,6 +1,7 @@
 package video
 
 import (
+	"context"
 	"github.com/pion/webrtc/v3"
 )
 
@@ -23,6 +24,7 @@ type Unsubscribe = func()
 
 // Player is a handle on some video source
 type Player interface {
-	Play() (chan Frame, Unsubscribe, error)
+	Play() (chan Frame, context.CancelFunc, error)
+	Stop()
 	Type() Type
 }

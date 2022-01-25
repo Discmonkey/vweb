@@ -1,34 +1,49 @@
 package android
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"github.com/discmonkey/vweb/pkg/video"
 	"net"
+	"time"
 )
 
 type Player struct {
-	router *video.Router
-	sps    []byte
-	pps    []byte
+	sps         []byte
+	pps         []byte
+	source      chan video.Frame
+	subscribers map[chan video.Frame]bool
+	subscribe   chan chan video.Frame
+	unsubscribe chan chan video.Frame
+	cancel      context.CancelFunc
+}
+
+func (p *Player) Stop() {
+	if p.cancel != nil {
+		p.cancel()
+	}
 }
 
 func (p Player) Type() video.Type {
 	return video.H264
 }
 
-func (p Player) Play() (chan video.Frame, video.Unsubscribe, error) {
+func (p Player) Play() (chan video.Frame, context.CancelFunc, error) {
 	out := make(chan video.Frame)
 
-	go func() {
-		out <- Frame{
-			bytes: p.sps,
-		}
+	select {
+	case <-time.After(time.Second * 5):
+		return nil, nil, errors.New("could not subscribe to stream")
+	case p.subscribe <- out:
+	}
 
-		out <- Frame{
-			bytes: p.pps,
+	cancel := func() {
+		select {
+		case <-time.After(time.Second * 5):
+		case p.unsubscribe <- out:
 		}
-	}()
-
-	cancel := p.router.AddOut(out)
+	}
 
 	return out, cancel, nil
 }
@@ -40,51 +55,90 @@ type Frame struct {
 
 func (f Frame) Bytes() ([]byte, error) {
 	//TODO implement me
-	panic("implement me")
+	return f.bytes, nil
 }
 
 func (f Frame) Count() (int, error) {
 	//TODO implement me
-	panic("implement me")
+	return 0, nil
 }
 
-func (f Frame) Type() video.Type {
-	//TODO implement me
-	panic("implement me")
-}
-
-func NewPlayer(port int) (video.Player, error) {
-	spsC, ppsC, frameC := make(chan []byte), make(chan []byte), make(chan []byte)
+func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 	newFrameSource := make(chan video.Frame)
+
+	p := Player{
+		sps:         nil,
+		pps:         nil,
+		source:      newFrameSource,
+		subscribers: make(map[chan video.Frame]bool),
+		subscribe:   make(chan chan video.Frame),
+		unsubscribe: make(chan chan video.Frame),
+		cancel:      nil,
+	}
+	ctxt, cancel := context.WithCancel(context.Background())
+	out, err := p.Listen(ctxt, port)
+	if err != nil {
+		cancel()
+		return nil, nil, err
+	}
+
+	p.cancel = cancel
+	go func() {
+		for {
+			select {
+			case <-ctxt.Done():
+				return
+			case s := <-p.subscribe:
+				p.subscribers[s] = true
+				s <- Frame{bytes: p.pps}
+				s <- Frame{bytes: p.sps}
+			case s := <-p.unsubscribe:
+				delete(p.subscribers, s)
+			case f := <-out:
+				for channel := range p.subscribers {
+					select {
+					case channel <- Frame{bytes: f}:
+					default:
+					}
+				}
+			}
+		}
+	}()
+
+	return &p, cancel, nil
+}
+
+func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
 	addr := net.UDPAddr{
 		Port: port,
-		IP:   net.ParseIP("127.0.0.1"),
+		IP:   net.ParseIP("0.0.0.0"),
 	}
 	conn, err := net.ListenUDP("udp", &addr) // code does not block here
 	if err != nil {
 		return nil, err
 	}
-	h264Parser{}.parse(conn, spsC, ppsC, frameC)
-	p := Player{
-		router: video.NewRouter(newFrameSource),
+	input := make(chan []byte)
+	go h264Parser{}.parse(ctxt, conn, input)
+	// wait to get the sps and pps and out
+	timeout := time.After(time.Minute * 3)
+
+	for p.sps == nil || p.pps == nil {
+		var next []byte
+		select {
+		case next = <-input:
+		case <-timeout:
+			return nil, errors.New("could not find sps and pps")
+		}
+		if next[0] == PPS {
+			fmt.Println("found pps")
+			p.pps = next
+		} else if next[0] == SPS {
+			fmt.Println("found sps")
+			p.sps = next
+		}
 	}
 
-	go func() {
-		{
-			f := Frame{}
-			select {
-			case p.pps = <-spsC:
-				f.bytes = p.pps
-			case p.sps = <-ppsC:
-				f.bytes = p.sps
-			case f.bytes = <-frameC:
-			}
-
-			newFrameSource <- f
-		}
-	}()
-
-	return &p, nil
+	return input, nil
 }
 
 var _ video.Player = &Player{}

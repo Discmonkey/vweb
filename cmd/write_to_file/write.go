@@ -1,37 +1,42 @@
 package main
 
 import (
-	"fmt"
-	"github.com/discmonkey/vweb/internal/ffmpeg"
+	"github.com/discmonkey/vweb/pkg/android"
 	"os"
 )
 
 func main() {
-	reader, err := ffmpeg.NewPlayer("/home/max/go/src/vweb/test/data/output.ts")
+	reader, cancelF, err := android.NewPlayer(9000)
 	if err != nil {
 		return
 	}
 
-	f, err := os.Create("out.ts")
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(f)
+	out, _, err := reader.Play()
 	if err != nil {
 		return
 	}
-	for {
-		frame, _, err := reader.Next()
+
+	file, err := os.Create("out.ts")
+	defer func() {
+		err := file.Close()
 		if err != nil {
-			fmt.Println(err)
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return
+	}
+	for i := 0; i < 100; i++ {
+		f := <-out
+		bytes, err := f.Bytes()
+		if err != nil {
+			return
+		}
+		_, _ = file.Write(bytes)
+		if i > 100 {
+			cancelF()
 			break
-		} else if frame.IsKey() {
-			_, _ = f.Write(frame.Bytes())
-		} else {
-			bytes := frame.Bytes()
-			_, _ = f.Write(bytes)
 		}
 	}
 

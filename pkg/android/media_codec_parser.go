@@ -1,7 +1,7 @@
 package android
 
 import (
-	"fmt"
+	"context"
 	"net"
 )
 
@@ -16,66 +16,74 @@ const (
 	UNSET      = 129
 )
 
-func (p h264Parser) parse(con net.Conn, spsChan chan []byte, ppsChan chan []byte, frameChan chan []byte) {
+type parseState = byte
+
+const (
+	NA   parseState = 0
+	O___ parseState = 1
+	OO__ parseState = 2
+	OOO_ parseState = 3
+	OOO1 parseState = 4
+)
+
+func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte) {
 	// reader
-	next := make([]byte, 1024)
-	prev := make([]byte, 1024)
-	ready := make(chan []byte)
-	go func() {
-		for n := 1; n >= 0; {
-			var err error
-			n, err = con.Read(prev)
-			if err != nil {
-				fmt.Println(err)
-				close(ready)
-			}
+	input := make([]byte, 2048)
+	output := make([]byte, 0, 2048)
+	sentSps := false
+	sentPps := false
 
-			if n > 0 {
-				prev = prev[:n]
-				ready <- prev
-				prev, next = next, prev
-			}
-		}
-	}()
-	go func() {
-		markerPosition := 0
-		var dest []byte
-
-		send := func() {
-			switch dest[0] {
-			case SPS:
-				spsChan <- dest
-			case PPS:
-				ppsChan <- dest
+	var state = NA
+	for n, err := con.Read(input); err == nil; {
+		var c byte
+		for i := 0; i < n; i++ {
+			c = input[i]
+			switch c {
+			case 0:
+				switch state {
+				case NA:
+					state = O___
+				case O___:
+					state = OO__
+				case OO__:
+					state = OOO_
+				case OOO_:
+					output = append(output, 0)
+				}
 			default:
-				frameChan <- dest
-			}
-		}
-		for bytes := range ready {
-			for i := range bytes {
-				switch bytes[i] {
-				case 0:
-					if markerPosition < 3 {
-						markerPosition += 1
-					} else {
-						dest = append(dest, 0)
-					}
-				case 1:
-					if markerPosition == 3 {
-						markerPosition = 0
-						if len(dest) > 0 {
-							send()
+				switch state {
+				case NA:
+					output = append(output, c)
+				case O___:
+					output = append(output, 0, c)
+					state = NA
+				case OO__:
+					output = append(output, 0, 0, c)
+					state = NA
+				case OOO_:
+					if input[i] == 1 {
+						if len(output) > 0 {
+							isPPS := output[0] == PPS
+							isSPS := output[0] == SPS
+							if sentPps && sentSps || isSPS || isPPS {
+								out <- output
+								//select {
+								//case out <- output:
+								//case <-cancel.Done():
+								//	return
+								//}
+								sentSps = sentSps || isSPS
+								sentPps = sentPps || isPPS
+							}
 						}
-						dest = dest[:0]
+						output = output[:0]
+						state = NA
+					} else {
+						output = append(output, 0, 0, 0, input[i])
 					}
-				default:
-					for markerPosition > 0 {
-						dest = append(dest, 0)
-						markerPosition--
-					}
-					dest = append(dest, bytes[i])
 				}
 			}
 		}
-	}()
+	}
+	close(out)
 }
