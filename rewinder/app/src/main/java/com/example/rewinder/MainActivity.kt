@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-    private var udpOutputStream = UDPOutputStream("192.168.1.11", 9000)
+    private var udpOutputStream = UDPOutputStream("192.168.1.10", 9000)
 
     private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
         UDPWriterCallback(BufferedOutputStream(udpOutputStream)))

@@ -109,14 +109,19 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 }
 
 func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
-	addr := net.UDPAddr{
+	addr := net.TCPAddr{
 		Port: port,
 		IP:   net.ParseIP("0.0.0.0"),
 	}
-	conn, err := net.ListenUDP("udp", &addr) // code does not block here
+	listener, err := net.ListenTCP("tcp", &addr) // code does not block here
 	if err != nil {
 		return nil, err
 	}
+	conn, err := listener.AcceptTCP()
+	if err != nil {
+		return nil, err
+	}
+
 	input := make(chan []byte)
 	go h264Parser{}.parse(ctxt, conn, input)
 	// wait to get the sps and pps and out

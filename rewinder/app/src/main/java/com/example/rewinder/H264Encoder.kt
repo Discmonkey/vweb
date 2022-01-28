@@ -70,7 +70,7 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
 
     override fun onSurfaceRequested(request: SurfaceRequest) {
         Log.d("onSurfaceRequested", "called")
-        this.start()
         getSurface()?.let { request.provideSurface(it, SimpleExecutor(), SimpleConsumer()) }
+        this.start()
     }
 }

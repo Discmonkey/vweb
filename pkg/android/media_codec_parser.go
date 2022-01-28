@@ -2,6 +2,7 @@ package android
 
 import (
 	"context"
+	"fmt"
 	"net"
 )
 
@@ -34,7 +35,13 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 	sentPps := false
 
 	var state = NA
-	for n, err := con.Read(input); err == nil; {
+	var n int
+	var err error
+	for {
+		if n, err = con.Read(input); err != nil {
+			break
+		}
+
 		var c byte
 		for i := 0; i < n; i++ {
 			c = input[i]
@@ -65,13 +72,15 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 						if len(output) > 0 {
 							isPPS := output[0] == PPS
 							isSPS := output[0] == SPS
-							if sentPps && sentSps || isSPS || isPPS {
-								out <- output
-								//select {
-								//case out <- output:
-								//case <-cancel.Done():
-								//	return
-								//}
+							if (sentPps && sentSps) || isSPS || isPPS {
+								sending := make([]byte, len(output))
+								copy(sending, output)
+								select {
+								case out <- sending:
+								case <-cancel.Done():
+									fmt.Println("context canceled")
+									return
+								}
 								sentSps = sentSps || isSPS
 								sentPps = sentPps || isPPS
 							}

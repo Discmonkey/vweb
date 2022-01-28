@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fs := http.FileServer(http.Dir(vars.HttpStaticDir()))
-	player, err := android.NewPlayer(9000)
+	player, _, err := android.NewPlayer(9000)
 	if err != nil {
 		log.Fatalln(err)
 	}

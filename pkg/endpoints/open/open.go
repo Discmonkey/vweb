@@ -82,7 +82,7 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 					break
 				}
 
-				if err = videoTrack.WriteSample(media.Sample{Data: bytes, Duration: time.Millisecond * 33}); err != nil {
+				if err = videoTrack.WriteSample(media.Sample{Data: bytes, Duration: time.Second}); err != nil {
 					panic(err)
 				}
 			}
