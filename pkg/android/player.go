@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/discmonkey/vweb/internal/nal"
 	"github.com/discmonkey/vweb/pkg/video"
 	"net"
 	"time"
@@ -13,7 +14,7 @@ type Player struct {
 	sps         []byte
 	pps         []byte
 	source      chan video.Frame
-	subscribers map[chan video.Frame]bool
+	subscribers map[chan video.Frame]*receiverState
 	subscribe   chan chan video.Frame
 	unsubscribe chan chan video.Frame
 	cancel      context.CancelFunc
@@ -63,6 +64,10 @@ func (f Frame) Count() (int, error) {
 	return 0, nil
 }
 
+type receiverState struct {
+	idrSent bool
+}
+
 func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 	newFrameSource := make(chan video.Frame)
 
@@ -70,7 +75,7 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 		sps:         nil,
 		pps:         nil,
 		source:      newFrameSource,
-		subscribers: make(map[chan video.Frame]bool),
+		subscribers: make(map[chan video.Frame]*receiverState),
 		subscribe:   make(chan chan video.Frame),
 		unsubscribe: make(chan chan video.Frame),
 		cancel:      nil,
@@ -89,13 +94,19 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 			case <-ctxt.Done():
 				return
 			case s := <-p.subscribe:
-				p.subscribers[s] = true
-				s <- Frame{bytes: p.pps}
-				s <- Frame{bytes: p.sps}
+				p.subscribers[s] = &receiverState{}
 			case s := <-p.unsubscribe:
 				delete(p.subscribers, s)
 			case f := <-out:
-				for channel := range p.subscribers {
+				for channel, idrSent := range p.subscribers {
+					if !idrSent.idrSent {
+						if nal.IsIDR(f[0]) {
+							channel <- Frame{bytes: p.sps}
+							channel <- Frame{bytes: p.pps}
+							idrSent.idrSent = true
+						}
+					}
+
 					select {
 					case channel <- Frame{bytes: f}:
 					default:
@@ -134,15 +145,15 @@ func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
 		case <-timeout:
 			return nil, errors.New("could not find sps and pps")
 		}
-		if next[0] == PPS {
-			fmt.Println("found pps")
-			p.pps = next
-		} else if next[0] == SPS {
+		switch nal.Type(next[0]) {
+		case nal.SeqParameterSetRbsp:
 			fmt.Println("found sps")
 			p.sps = next
+		case nal.PicParameterSetRbsp:
+			fmt.Println("found pps")
+			p.pps = next
 		}
 	}
-
 	return input, nil
 }
 

@@ -3,19 +3,13 @@ package android
 import (
 	"context"
 	"fmt"
+	"github.com/discmonkey/vweb/internal/nal"
 	"net"
 )
 
 // mediaCodecParser parses the buffers sent by an android media codec h264 encoder
 type h264Parser struct {
 }
-
-const (
-	SPS   byte = 103
-	PPS        = 104
-	OTHER      = 128 // the largest valid NAL byte value is 127
-	UNSET      = 129
-)
 
 type parseState = byte
 
@@ -70,8 +64,10 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 				case OOO_:
 					if input[i] == 1 {
 						if len(output) > 0 {
-							isPPS := output[0] == PPS
-							isSPS := output[0] == SPS
+							nal.Debug(output[0])
+							isPPS := nal.IsPPS(output[0])
+							isSPS := nal.IsSPS(output[0])
+
 							if (sentPps && sentSps) || isSPS || isPPS {
 								sending := make([]byte, len(output))
 								copy(sending, output)

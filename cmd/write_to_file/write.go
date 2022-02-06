@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/discmonkey/vweb/internal/nal"
 	"github.com/discmonkey/vweb/pkg/android"
 	"os"
 )
@@ -33,8 +34,8 @@ func main() {
 		if err != nil {
 			return
 		}
-		_, _ = file.Write(bytes)
-		if i > 100 {
+		_, _ = file.WriteString(nal.ToString(nal.Type(bytes[0])) + "\n")
+		if i > 1000 {
 			cancelF()
 			break
 		}

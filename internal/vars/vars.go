@@ -9,7 +9,7 @@ func HttpStaticDir() string {
 	value, ok := os.LookupEnv("STATIC_HTTP_DIR")
 	if !ok {
 		// TODO(should be relative path to root of project)
-		value = "/home/max/go/src/vweb/client/dist"
+		value = "client/dist"
 	}
 
 	return value

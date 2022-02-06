@@ -1,11 +1,29 @@
 package nal
 
-type UnitType = int
+import "fmt"
+
+type UnitType = byte
 type Unit = byte
 
 func Type(n Unit) UnitType {
 	// the lowest 5 bits specify the nal type
-	return UnitType(n & 63)
+	return (n << 3) >> 3
+}
+
+func IsSPS(n Unit) bool {
+	return Type(n) == SeqParameterSetRbsp
+}
+
+func IsPPS(n Unit) bool {
+	return Type(n) == PicParameterSetRbsp
+}
+
+func Debug(b byte) {
+	fmt.Println(ToString(Type(b)))
+}
+
+func IsIDR(b byte) bool {
+	return Type(b) == IdrSliceLayerWithoutPartitioningRbsp
 }
 
 const (
@@ -32,7 +50,7 @@ const (
 	Reserved = 16
 )
 
-func toString(i UnitType) string {
+func ToString(i UnitType) string {
 	value := "Unspecified"
 	switch i {
 	case NonIdrSliceLayerWithoutPartitioningRbsp:
