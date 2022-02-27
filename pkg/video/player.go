@@ -25,6 +25,5 @@ type Unsubscribe = func()
 // Player is a handle on some video source
 type Player interface {
 	Play() (chan Frame, context.CancelFunc, error)
-	Stop()
 	Type() Type
 }

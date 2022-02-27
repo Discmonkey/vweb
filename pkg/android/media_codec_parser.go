@@ -1,9 +1,8 @@
 package android
 
 import (
+	"bytes"
 	"context"
-	"fmt"
-	"github.com/discmonkey/vweb/internal/nal"
 	"net"
 )
 
@@ -21,74 +20,36 @@ const (
 	OOO1 parseState = 4
 )
 
+var sep = []byte{0, 0, 0, 1}
+
 func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte) {
 	// reader
-	input := make([]byte, 2048)
-	output := make([]byte, 0, 2048)
-	sentSps := false
-	sentPps := false
+	input := make([]byte, 16384)
 
-	var state = NA
-	var n int
-	var err error
 	for {
-		if n, err = con.Read(input); err != nil {
-			break
+		n, err := con.Read(input)
+		if err != nil {
+			close(out)
+			return
 		}
 
-		var c byte
-		for i := 0; i < n; i++ {
-			c = input[i]
-			switch c {
-			case 0:
-				switch state {
-				case NA:
-					state = O___
-				case O___:
-					state = OO__
-				case OO__:
-					state = OOO_
-				case OOO_:
-					output = append(output, 0)
-				}
-			default:
-				switch state {
-				case NA:
-					output = append(output, c)
-				case O___:
-					output = append(output, 0, c)
-					state = NA
-				case OO__:
-					output = append(output, 0, 0, c)
-					state = NA
-				case OOO_:
-					if input[i] == 1 {
-						if len(output) > 0 {
-							nal.Debug(output[0])
-							isPPS := nal.IsPPS(output[0])
-							isSPS := nal.IsSPS(output[0])
+		outputs := bytes.Split(input[:n], sep)
 
-							if (sentPps && sentSps) || isSPS || isPPS {
-								sending := make([]byte, len(output))
-								copy(sending, output)
-								select {
-								case out <- sending:
-								case <-cancel.Done():
-									fmt.Println("context canceled")
-									return
-								}
-								sentSps = sentSps || isSPS
-								sentPps = sentPps || isPPS
-							}
-						}
-						output = output[:0]
-						state = NA
-					} else {
-						output = append(output, 0, 0, 0, input[i])
-					}
-				}
+		for _, slice := range outputs {
+			if len(slice) == 0 {
+				continue
+			}
+			output := make([]byte, len(slice)+4)
+			copy(output, sep)
+			copy(output[4:], slice)
+
+			select {
+			case out <- output:
+			case <-cancel.Done():
+				close(out)
+				return
 			}
 		}
+
 	}
-	close(out)
 }

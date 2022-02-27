@@ -140,18 +140,18 @@ PacketOrError next_packet(Stream *stream) {
             packet_or_error.packet->is_key_frame = (av_packet->flags & AV_PKT_FLAG_KEY) > 0;
 
             // For key frames we need to copy the sps and pps buffers at the start of the frame
-            if (packet_or_error.packet->is_key_frame) {
-                Buffer *buffer = (Buffer *)stream->buffer;
-                write_buffer(buffer,
-                             av_packet,
-                             context->streams[stream->video_index]->codecpar->extradata,
-                             context->streams[stream->video_index]->codecpar->extradata_size);
-                packet_or_error.packet->data = buffer->data;
-                packet_or_error.packet->size = buffer->length;
-            } else {
+//            if (packet_or_error.packet->is_key_frame) {
+//                Buffer *buffer = (Buffer *)stream->buffer;
+//                write_buffer(buffer,
+//                             av_packet,
+//                             context->streams[stream->video_index]->codecpar->extradata,
+//                             context->streams[stream->video_index]->codecpar->extradata_size);
+//                packet_or_error.packet->data = buffer->data;
+//                packet_or_error.packet->size = buffer->length;
+//            } else {
                 packet_or_error.packet->data = av_packet->data;
                 packet_or_error.packet->size = av_packet->size;
-            }
+//            }
 
             return packet_or_error;
         }

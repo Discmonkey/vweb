@@ -1,6 +1,7 @@
 package ffmpeg
 
 import (
+	"context"
 	"errors"
 	"github.com/discmonkey/vweb/internal/image"
 	"github.com/discmonkey/vweb/pkg/video"
@@ -14,11 +15,17 @@ import "C"
 
 // Player implements the videoPlayer interface with a ffmpeg backend
 type Player struct {
-	stream *C.Stream
-	count  video.Count
+	stream      *C.Stream
+	count       video.Count
+	subscribers map[chan video.Frame]bool
+	subscribe   chan chan video.Frame
 }
 
-func (p *Player) Play() (chan video.Frame, error) {
+func (p *Player) Type() video.Type {
+	return video.H264
+}
+
+func (p *Player) Play() (chan video.Frame, context.CancelFunc, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -30,22 +37,14 @@ type Frame struct {
 	isKeyFrame bool
 }
 
-func (f *Frame) Bytes() ([]byte, error) {
-	//TODO implement me
-	return f.data, nil
-}
-
-func (f *Frame) Type() video.Type {
+func (f *Frame) Count() (int, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f *Frame) Aspect() (image.Aspect, error) {
-	return f.aspect, nil
-}
-
-func (f *Frame) IsKey() bool {
-	return f.isKeyFrame
+func (f *Frame) Bytes() ([]byte, error) {
+	//TODO implement me
+	return f.data, nil
 }
 
 // NewPlayer attempts to open url using ffmpeg c bindings
@@ -59,10 +58,13 @@ func NewPlayer(url string) (video.Player, error) {
 		return nil, errors.New(C.GoString(streamOrError.error.reason))
 	}
 
-	return &Player{
-		stream: streamOrError.stream,
-		count:  0,
-	}, nil
+	p := &Player{
+		stream:    streamOrError.stream,
+		count:     0,
+		subscribe: nil,
+	}
+
+	return p, nil
 }
 
 // Next returns the next frame in the stream
@@ -82,11 +84,6 @@ func (p *Player) Next() (video.Frame, video.Count, error) {
 		aspect,
 		isKeyFrame,
 	}, p.count, nil
-}
-
-// Encoding for the ffmpeg player only supports H264
-func (p *Player) Encoding() (video.Encoding, error) {
-	return video.H264, nil
 }
 
 // wrapRawBytes converts a raw pointer to a go slice

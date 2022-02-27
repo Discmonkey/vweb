@@ -68,6 +68,12 @@ type receiverState struct {
 	idrSent bool
 }
 
+func safeSend(channel chan video.Frame, bytes []byte) {
+	select {
+	case channel <- Frame{bytes: bytes}:
+	default:
+	}
+}
 func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 	newFrameSource := make(chan video.Frame)
 
@@ -100,17 +106,15 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 			case f := <-out:
 				for channel, idrSent := range p.subscribers {
 					if !idrSent.idrSent {
-						if nal.IsIDR(f[0]) {
-							channel <- Frame{bytes: p.sps}
-							channel <- Frame{bytes: p.pps}
+						if nal.IsIDR(f[4]) {
+							safeSend(channel, p.sps)
+							safeSend(channel, p.pps)
 							idrSent.idrSent = true
+						} else {
+							continue
 						}
 					}
-
-					select {
-					case channel <- Frame{bytes: f}:
-					default:
-					}
+					safeSend(channel, f)
 				}
 			}
 		}
@@ -145,7 +149,7 @@ func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
 		case <-timeout:
 			return nil, errors.New("could not find sps and pps")
 		}
-		switch nal.Type(next[0]) {
+		switch nal.Type(next[4]) {
 		case nal.SeqParameterSetRbsp:
 			fmt.Println("found sps")
 			p.sps = next

@@ -5,7 +5,6 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Log
 import android.view.Surface
-import android.view.SurfaceView
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
 import androidx.core.util.Consumer
@@ -22,10 +21,10 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     init {
         val mediaFormat = MediaFormat.createVideoFormat("video/avc", 320, 240)
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 125000)
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 10)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
         mediaCodec.setCallback(callback)
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         inputSurface = mediaCodec.createInputSurface()
