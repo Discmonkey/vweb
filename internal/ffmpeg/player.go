@@ -3,9 +3,11 @@ package ffmpeg
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/discmonkey/vweb/internal/image"
 	"github.com/discmonkey/vweb/pkg/video"
 	"reflect"
+	"time"
 	"unsafe"
 )
 
@@ -27,7 +29,27 @@ func (p *Player) Type() video.Type {
 
 func (p *Player) Play() (chan video.Frame, context.CancelFunc, error) {
 	//TODO implement me
-	panic("implement me")
+	c := make(chan video.Frame)
+	cxt, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for {
+			select {
+			case <-cxt.Done():
+				break
+			default:
+				f, _, err := p.Next()
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				c <- f
+			}
+			time.Sleep(time.Millisecond * 50)
+		}
+	}()
+
+	return c, cancel, nil
 }
 
 // Frame implements the video.Frame interface with a ffmpeg backend

@@ -3,8 +3,6 @@ package android
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/discmonkey/vweb/internal/nal"
 	"github.com/discmonkey/vweb/pkg/video"
 	"net"
 	"time"
@@ -104,16 +102,7 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 			case s := <-p.unsubscribe:
 				delete(p.subscribers, s)
 			case f := <-out:
-				for channel, idrSent := range p.subscribers {
-					if !idrSent.idrSent {
-						if nal.IsIDR(f[4]) {
-							safeSend(channel, p.sps)
-							safeSend(channel, p.pps)
-							idrSent.idrSent = true
-						} else {
-							continue
-						}
-					}
+				for channel := range p.subscribers {
 					safeSend(channel, f)
 				}
 			}
@@ -124,40 +113,20 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 }
 
 func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
-	addr := net.TCPAddr{
+	addr := net.UDPAddr{
 		Port: port,
 		IP:   net.ParseIP("0.0.0.0"),
 	}
-	listener, err := net.ListenTCP("tcp", &addr) // code does not block here
-	if err != nil {
-		return nil, err
-	}
-	conn, err := listener.AcceptTCP()
+	conn, err := net.ListenUDP("udp", &addr) // code does not block here
 	if err != nil {
 		return nil, err
 	}
 
 	input := make(chan []byte)
-	go h264Parser{}.parse(ctxt, conn, input)
-	// wait to get the sps and pps and out
-	timeout := time.After(time.Minute * 3)
+	go func() {
+		h264Parser{}.parse(ctxt, conn, input)
+	}()
 
-	for p.sps == nil || p.pps == nil {
-		var next []byte
-		select {
-		case next = <-input:
-		case <-timeout:
-			return nil, errors.New("could not find sps and pps")
-		}
-		switch nal.Type(next[4]) {
-		case nal.SeqParameterSetRbsp:
-			fmt.Println("found sps")
-			p.sps = next
-		case nal.PicParameterSetRbsp:
-			fmt.Println("found pps")
-			p.pps = next
-		}
-	}
 	return input, nil
 }
 

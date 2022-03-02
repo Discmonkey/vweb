@@ -1,8 +1,8 @@
 package android
 
 import (
-	"bytes"
 	"context"
+	"github.com/discmonkey/vweb/internal/nal"
 	"net"
 )
 
@@ -10,46 +10,75 @@ import (
 type h264Parser struct {
 }
 
-type parseState = byte
+type parserState byte
 
 const (
-	NA   parseState = 0
-	O___ parseState = 1
-	OO__ parseState = 2
-	OOO_ parseState = 3
-	OOO1 parseState = 4
+	NA   parserState = 0
+	O    parserState = 1
+	OO   parserState = 2
+	OOO  parserState = 3
+	OOO1 parserState = 4 // never used
 )
-
-var sep = []byte{0, 0, 0, 1}
 
 func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte) {
 	// reader
-	input := make([]byte, 16384)
+	input := make([]byte, 256)
+	output := make([]byte, 0, 0)
 
+	defer func() {
+		close(out)
+	}()
+
+	var last byte = 0
+	shouldWriteLast := false
+	clear := false
+
+	state := NA
 	for {
 		n, err := con.Read(input)
 		if err != nil {
-			close(out)
 			return
 		}
 
-		outputs := bytes.Split(input[:n], sep)
+		for i := 0; i < n; i++ {
+			if input[i] == 0 {
+				if state == NA || state == OO || state == O {
+					state += 1
+				}
+			} else if input[i] == 1 && state == OOO {
+				shouldWriteLast = true
+				if len(output) > 3 {
+					// shorten output by 3 since it would have 000 appended to it,
+					// which technically belongs to the next buffer
+					clear = !(nal.IsPPS(last) || nal.IsSPS(last))
+					if clear {
+						length := len(output) - 3
+						outSend := make([]byte, length)
+						copy(outSend, output[:length])
 
-		for _, slice := range outputs {
-			if len(slice) == 0 {
-				continue
-			}
-			output := make([]byte, len(slice)+4)
-			copy(output, sep)
-			copy(output[4:], slice)
+						select {
+						case out <- outSend:
+						case <-cancel.Done():
+							return
+						}
+					}
+				}
 
-			select {
-			case out <- output:
-			case <-cancel.Done():
-				close(out)
-				return
+				if clear {
+					output = output[:0]
+					output = append(output, 0, 0, 0)
+				}
+
+				state = NA
+
+			} else {
+				if shouldWriteLast {
+					last = input[i]
+					shouldWriteLast = false
+				}
+				state = NA
 			}
+			output = append(output, input[i])
 		}
-
 	}
 }

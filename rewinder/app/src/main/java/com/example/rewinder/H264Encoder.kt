@@ -19,7 +19,7 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     private val mediaCodec: MediaCodec = MediaCodec.createEncoderByType("video/avc")
     private var inputSurface: Surface? = null;
     init {
-        val mediaFormat = MediaFormat.createVideoFormat("video/avc", 320, 240)
+        val mediaFormat = MediaFormat.createVideoFormat("video/avc", 1920, 1080)
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 125000)
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,

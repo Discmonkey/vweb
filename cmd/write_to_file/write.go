@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/discmonkey/vweb/internal/nal"
+	"fmt"
+	"github.com/discmonkey/vweb/internal/utils"
 	"github.com/discmonkey/vweb/pkg/android"
 	"os"
 )
@@ -25,16 +26,20 @@ func main() {
 		}
 	}()
 
+	timer := utils.FpsTimer{}
+	timer.Start()
 	if err != nil {
 		return
 	}
-	for i := 0; i < 100; i++ {
+	for i := 0; ; i++ {
 		f := <-out
 		bytes, err := f.Bytes()
+		fmt.Println(len(bytes), timer.Tick())
 		if err != nil {
 			return
 		}
-		_, _ = file.WriteString(nal.ToString(nal.Type(bytes[0])) + "\n")
+
+		_, _ = file.Write(bytes)
 		if i > 1000 {
 			cancelF()
 			break
