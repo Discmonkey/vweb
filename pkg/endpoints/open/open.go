@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	iutils "github.com/discmonkey/vweb/internal/utils"
 	"github.com/discmonkey/vweb/pkg/endpoints/utils"
 	"github.com/discmonkey/vweb/pkg/video"
 	"github.com/pion/webrtc/v3"
@@ -68,7 +67,6 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 
 		go func() {
 			stream, _, err := player.Play()
-			stream = iutils.MeterChannel(stream, 20)
 
 			if utils.HttpNotOk(400, w, "could not stream contents", err) {
 				return
@@ -77,12 +75,9 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 			// Wait for connection established
 			<-iceConnectedCtx.Done()
 
-			t := iutils.FpsTimer{}
-			t.Start()
 			// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
 			// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
 			for frame := range stream {
-				fmt.Printf("%f\n", t.Tick())
 				bytes, err := frame.Bytes()
 				if err != nil {
 					fmt.Println(err)

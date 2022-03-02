@@ -48,10 +48,11 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 			} else if input[i] == 1 && state == OOO {
 				shouldWriteLast = true
 				if len(output) > 3 {
-					// shorten output by 3 since it would have 000 appended to it,
-					// which technically belongs to the next buffer
+
 					clear = !(nal.IsPPS(last) || nal.IsSPS(last))
 					if clear {
+						// shorten output by 3 since it would have 000 appended to it,
+						// which technically belongs to the next buffer
 						length := len(output) - 3
 						outSend := make([]byte, length)
 						copy(outSend, output[:length])
