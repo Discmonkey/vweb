@@ -30,7 +30,6 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 	}()
 
 	var last byte = 0
-	shouldWriteLast := false
 	clear := false
 
 	state := NA
@@ -46,7 +45,7 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 					state += 1
 				}
 			} else if input[i] == 1 && state == OOO {
-				shouldWriteLast = true
+				state = OOO1
 				if len(output) > 3 {
 
 					clear = !(nal.IsPPS(last) || nal.IsSPS(last))
@@ -69,13 +68,9 @@ func (p h264Parser) parse(cancel context.Context, con net.Conn, out chan []byte)
 					output = output[:0]
 					output = append(output, 0, 0, 0)
 				}
-
-				state = NA
-
 			} else {
-				if shouldWriteLast {
+				if state == OOO1 {
 					last = input[i]
-					shouldWriteLast = false
 				}
 				state = NA
 			}

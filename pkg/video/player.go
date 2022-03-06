@@ -18,6 +18,7 @@ type Count = uint64
 type Frame interface {
 	Bytes() ([]byte, error)
 	Count() (int, error)
+	Free()
 }
 
 type Unsubscribe = func()

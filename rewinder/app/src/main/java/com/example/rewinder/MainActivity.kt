@@ -2,36 +2,26 @@ package com.example.rewinder
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.MediaCodec
-import android.media.MediaCodecInfo
-import android.media.MediaCodecList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
-import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.BufferedOutputStream
-import java.io.File
-import java.net.Inet4Address
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity() {
-    private var imageCapture: ImageCapture? = null
-
-    private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-    private var udpOutputStream = UDPOutputStream("192.168.1.11", 9000)
-
+    private var udpOutputStream = UDPOutputStream("192.168.87.228", 9000)
+    @RequiresApi(32)
     private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
         UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
 
@@ -51,8 +41,6 @@ class MainActivity : AppCompatActivity() {
 
         // Set up the listener for take photo button
         cameraCaptureButton.setOnClickListener { startStream() }
-
-        outputDirectory = getOutputDirectory()
 
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
@@ -75,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-            val encoderPreview = Preview.Builder()
+            val encoderPreview  = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(
@@ -92,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, encoderPreview
+                    this, cameraSelector, preview, encoderPreview
                 )
 
 
@@ -106,13 +94,6 @@ class MainActivity : AppCompatActivity() {
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
     }
 
     override fun onDestroy() {

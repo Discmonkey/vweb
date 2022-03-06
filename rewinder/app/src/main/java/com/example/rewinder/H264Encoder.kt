@@ -3,8 +3,10 @@ package com.example.rewinder
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Log
 import android.view.Surface
+import androidx.annotation.RequiresApi
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
 import androidx.core.util.Consumer
@@ -12,6 +14,7 @@ import java.io.BufferedOutputStream
 import java.lang.Exception
 import java.util.concurrent.Executor
 
+@RequiresApi(Build.VERSION_CODES.S_V2)
 class H264Encoder(private val outputStream: BufferedOutputStream,
                   callback: MediaCodec.Callback
                   ) : Preview.SurfaceProvider {
@@ -20,13 +23,16 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     private var inputSurface: Surface? = null;
     init {
         val mediaFormat = MediaFormat.createVideoFormat("video/avc", 1920, 1080)
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 125000)
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 20)
+        mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE,
+            MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 10)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 2)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+        mediaFormat.setString(MediaFormat.KEY_LATENCY,
+            MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)
         mediaCodec.setCallback(callback)
-        mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         inputSurface = mediaCodec.createInputSurface()
     }
 

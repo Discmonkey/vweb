@@ -62,6 +62,8 @@ func (f Frame) Count() (int, error) {
 	return 0, nil
 }
 
+func (f Frame) Free() {}
+
 type receiverState struct {
 	idrSent bool
 }
