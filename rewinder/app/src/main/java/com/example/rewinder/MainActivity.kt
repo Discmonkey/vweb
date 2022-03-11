@@ -20,11 +20,12 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
-    private var udpOutputStream = UDPOutputStream("192.168.87.228", 9000)
+    private var udpOutputStream = UDPOutputStream("192.168.1.11", 9000)
     @RequiresApi(32)
     private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
         UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
 
+    @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private fun startStream() {
     }
 
+    @RequiresApi(32)
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
