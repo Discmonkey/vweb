@@ -13,12 +13,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Rewinder">
         <activity
-            android:name=".MainActivity"
+            android:name=".ConnectActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".StreamActivity"
+                  android:exported="true">
         </activity>
     </application>
 

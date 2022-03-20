@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Rewinder</string>
-    <string name="take_photo">Start Stream</string>
+    <string name="take_photo">Stream</string>
+    <string name="server_ip">Server IP</string>
+    <string name="ip">IP</string>
+    <string name="connect">Connect</string>
+    <string name="stop">Stop</string>
+    <string name="status">status</string>
 </resources>

@@ -1,3 +1,6 @@
 .idea
 /internal/ffmpeg/c/build
 internal/ffmpeg/rust/packets/target/
+pkg/models
+rewinder/app/src/main/java/com/example/rewinder/network/models
+client/src/models

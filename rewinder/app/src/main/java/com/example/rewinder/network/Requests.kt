@@ -5,7 +5,7 @@ import org.json.JSONArray
 
 
 
-class RequestFactory {
+class Requests {
     fun Get(url: String) {
     }
 

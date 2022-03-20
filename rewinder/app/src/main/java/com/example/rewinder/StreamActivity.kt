@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
@@ -18,7 +17,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-class MainActivity : AppCompatActivity() {
+class StreamActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
     private var udpOutputStream = UDPOutputStream("192.168.1.11", 9000)
     @RequiresApi(32)
@@ -28,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_stream)
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -37,11 +36,6 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
-
-        // Set up the listener for take photo button
-
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun startStream() {
@@ -120,9 +114,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CameraXBasic"
-        private const val ERROR_TAG = "RewinderError"
-        private const val INFO_TAG = "RewinderInfo"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
