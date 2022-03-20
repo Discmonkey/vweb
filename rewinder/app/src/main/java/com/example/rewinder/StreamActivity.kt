@@ -38,10 +38,8 @@ class MainActivity : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
-        val cameraCaptureButton: Button = findViewById(R.id.camera_capture_button);
 
         // Set up the listener for take photo button
-        cameraCaptureButton.setOnClickListener { startStream() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
@@ -103,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor.shutdown()
     }
 
+    @RequiresApi(32)
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray) {
