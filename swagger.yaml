@@ -31,6 +31,8 @@ components:
       properties:
         address:
           $ref: '#/components/schemas/Address'
+        name:
+          type: string
 
     Source:
       type: object
