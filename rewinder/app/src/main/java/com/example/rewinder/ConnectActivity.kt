@@ -3,8 +3,7 @@ package com.example.rewinder
 import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import java.util.concurrent.Executors
+import io.swagger.server.models.Address
 
 class ConnectActivity : AppCompatActivity() {
     @RequiresApi(32)

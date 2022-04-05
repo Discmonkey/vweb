@@ -2,5 +2,5 @@
 /internal/ffmpeg/c/build
 internal/ffmpeg/rust/packets/target/
 pkg/swagger
-rewinder/app/src/main/java/com/example/rewinder/swagger
+rewinder/app/src/main/java/io
 client/src/swagger
