@@ -1,15 +1,29 @@
 package com.example.rewinder.network
 
-import org.json.JSONArray
+import io.swagger.server.models.Address
+import io.swagger.server.models.IP
+import io.swagger.server.models.Source
+import java.io.BufferedInputStream
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 
+// add source to server, and return the address to which we want to stream
+fun create_source(ip: IP, source: Source): Address {
+    val url  = URL("$ip:3000")
+    val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
+    urlConnection.requestMethod = "POST"
 
-
-class Requests {
-    fun Get(url: String) {
+    try {
+        val response: InputStream = BufferedInputStream(urlConnection.inputStream)
+        IOUtils.toString(inputStream, "UTF-8")
+        val jsonObject = jsonParser.parse(
+            InputStreamReader(inputStream, "UTF-8")
+        )
+    } finally {
+        urlConnection.disconnect()
     }
 
-    fun NewPlayer(url: String, payload: JSONArray) {
-
-    }
+    return Address(ip, 3000)
 }

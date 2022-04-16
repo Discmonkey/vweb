@@ -10,7 +10,7 @@ components:
       type: string
 
     Port:
-      type: number
+      type: integer
 
     Codec:
       type: string
@@ -59,11 +59,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Code'
+              $ref: '#/components/schemas/Source'
       responses:
         200:
           description: return an address for
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Code'
+                $ref: '#/components/schemas/Address'
