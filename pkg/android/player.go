@@ -74,7 +74,7 @@ func safeSend(channel chan video.Frame, bytes []byte) {
 	default:
 	}
 }
-func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
+func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc, error) {
 	newFrameSource := make(chan video.Frame)
 
 	p := Player{
@@ -87,7 +87,7 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 		cancel:      nil,
 	}
 	ctxt, cancel := context.WithCancel(context.Background())
-	out, err := p.Listen(ctxt, port)
+	out, err := p.Listen(ctxt, conn)
 	if err != nil {
 		cancel()
 		return nil, nil, err
@@ -114,16 +114,7 @@ func NewPlayer(port int) (video.Player, context.CancelFunc, error) {
 	return &p, cancel, nil
 }
 
-func (p *Player) Listen(ctxt context.Context, port int) (chan []byte, error) {
-	addr := net.UDPAddr{
-		Port: port,
-		IP:   net.ParseIP("0.0.0.0"),
-	}
-	conn, err := net.ListenUDP("udp", &addr) // code does not block here
-	if err != nil {
-		return nil, err
-	}
-
+func (p *Player) Listen(ctxt context.Context, conn net.Conn) (chan []byte, error) {
 	input := make(chan []byte)
 	go func() {
 		h264Parser{}.parse(ctxt, conn, input)

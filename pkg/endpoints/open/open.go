@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/discmonkey/vweb/pkg/endpoints/utils"
+	"github.com/discmonkey/vweb/pkg/utils"
 	"github.com/discmonkey/vweb/pkg/video"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/pkg/media"

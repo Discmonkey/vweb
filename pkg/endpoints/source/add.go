@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/discmonkey/vweb/pkg/android"
-	"github.com/discmonkey/vweb/pkg/endpoints/utils"
 	"github.com/discmonkey/vweb/pkg/swagger"
+	"github.com/discmonkey/vweb/pkg/utils"
 	"github.com/discmonkey/vweb/pkg/video"
 	"log"
 	"net/http"
@@ -43,7 +43,7 @@ func get(m *Manager, w http.ResponseWriter) {
 
 	err := json.NewEncoder(w).Encode(sources)
 	if err != nil {
-		log.Default().Println(err)
+		log.Print(err)
 	}
 }
 

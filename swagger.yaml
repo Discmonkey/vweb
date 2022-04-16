@@ -69,3 +69,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
+    delete:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      responses:
+        200:
+          description: successfully  removed stream
