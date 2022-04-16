@@ -64,7 +64,7 @@ paths:
               $ref: '#/components/schemas/Source'
       responses:
         200:
-          description: return an address for
+          description: return a UDP address for the udp stream
           content:
             application/json:
               schema:
