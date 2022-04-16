@@ -74,7 +74,7 @@ func safeSend(channel chan video.Frame, bytes []byte) {
 	default:
 	}
 }
-func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc, error) {
+func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc) {
 	newFrameSource := make(chan video.Frame)
 
 	p := Player{
@@ -87,11 +87,7 @@ func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc, error) {
 		cancel:      nil,
 	}
 	ctxt, cancel := context.WithCancel(context.Background())
-	out, err := p.Listen(ctxt, conn)
-	if err != nil {
-		cancel()
-		return nil, nil, err
-	}
+	out := p.Listen(ctxt, conn)
 
 	p.cancel = cancel
 	go func() {
@@ -111,16 +107,16 @@ func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc, error) {
 		}
 	}()
 
-	return &p, cancel, nil
+	return &p, cancel
 }
 
-func (p *Player) Listen(ctxt context.Context, conn net.Conn) (chan []byte, error) {
+func (p *Player) Listen(ctxt context.Context, conn net.Conn) chan []byte {
 	input := make(chan []byte)
 	go func() {
 		h264Parser{}.parse(ctxt, conn, input)
 	}()
 
-	return input, nil
+	return input
 }
 
 var _ video.Player = &Player{}

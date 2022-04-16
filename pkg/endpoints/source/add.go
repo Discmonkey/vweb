@@ -1,6 +1,7 @@
 package source
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/discmonkey/vweb/pkg/android"
@@ -14,7 +15,12 @@ import (
 
 type Manager struct {
 	m       sync.Mutex
-	players map[string]video.Player
+	players map[string]playerContext
+}
+
+type playerContext struct {
+	player video.Player
+	cancel context.CancelFunc
 }
 
 func post(m *Manager, res http.ResponseWriter, req *http.Request) {
@@ -26,7 +32,28 @@ func post(m *Manager, res http.ResponseWriter, req *http.Request) {
 	m.m.Lock()
 	defer m.m.Unlock()
 
-	m.players[s.Name] = android.NewPlayer()
+	udp, port, err := utils.NewRandomUdpConn()
+	if utils.HttpNotOk(500, res, "error assigning udp listener", err) {
+		return
+	}
+
+	// TODO(max) save the cancel somewhere
+	player, cancel := android.NewPlayer(udp)
+
+	m.players[s.Name] = playerContext{
+		player: player,
+		cancel: func() {
+			cancel()
+			if err := udp.Close(); err != nil {
+				log.Println(err)
+			}
+		},
+	}
+
+	json.NewEncoder(res).Encode(swagger.Address{
+		Ip:   "",
+		Port: int32(port),
+	})
 
 }
 
@@ -37,7 +64,7 @@ func get(m *Manager, w http.ResponseWriter) {
 	sources := make([]swagger.Source, 0, len(m.players))
 	for k, v := range m.players {
 		sources = append(sources, swagger.Source{
-			Codec: v.Type(), Name: k,
+			Codec: v.player.Type(), Name: k,
 		})
 	}
 
