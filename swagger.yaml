@@ -39,6 +39,8 @@ components:
       properties:
         codec:
           $ref: '#/components/schemas/Codec'
+        name:
+          type: string
 
 paths:
   /streams:

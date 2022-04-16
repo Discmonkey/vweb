@@ -9,6 +9,7 @@ type Type = string
 
 const (
 	H264 Type = webrtc.MimeTypeH264
+	VP9  Type = webrtc.MimeTypeVP9
 )
 
 // Count is used for synchronization between video source and metadata
