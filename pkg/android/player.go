@@ -38,6 +38,7 @@ func (p Player) Play() (chan video.Frame, context.CancelFunc, error) {
 	}
 
 	cancel := func() {
+		// in case someone still has one of the channels, and the player is inactive, we do not block indefinitely
 		select {
 		case <-time.After(time.Second * 5):
 		case p.unsubscribe <- out:
@@ -74,6 +75,7 @@ func safeSend(channel chan video.Frame, bytes []byte) {
 	default:
 	}
 }
+
 func NewPlayer(conn net.Conn) (video.Player, context.CancelFunc) {
 	newFrameSource := make(chan video.Frame)
 

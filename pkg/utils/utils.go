@@ -40,3 +40,9 @@ func Port(address string) (int, error) {
 	index := strings.LastIndex(address, ":")
 	return strconv.Atoi(address[index+1:])
 }
+
+func LogIf(err error) {
+	if err != nil {
+		log.Println(err)
+	}
+}

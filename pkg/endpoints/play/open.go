@@ -1,10 +1,11 @@
-package open
+package play
 
 import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/discmonkey/vweb/pkg/swagger"
 	"github.com/discmonkey/vweb/pkg/utils"
 	"github.com/discmonkey/vweb/pkg/video"
 	"github.com/pion/webrtc/v3"
@@ -13,17 +14,18 @@ import (
 	"time"
 )
 
-type Request struct {
-	SDP string `json:"sdp"`
-	URL string `json:"url"`
-}
-
-func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request) {
+// VideoEndpoint TODO(max) refactor and productionalize this method
+// VideoEndpoint plays a given media over the network
+func VideoEndpoint(l *video.Library) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req Request
-		var res Request
+		var req, res swagger.Session
 		if utils.HttpNotOk(404, w, "bad request",
 			json.NewDecoder(r.Body).Decode(&req)) {
+			return
+		}
+
+		codec, err := l.DescribeTitle(req.Stream.Name)
+		if utils.HttpNotOk(404, w, err.Error(), err) {
 			return
 		}
 
@@ -34,23 +36,23 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 				},
 			},
 		})
-
 		if utils.HttpNotOk(404, w, "could not create peer connection", err) {
 			return
 		}
 
 		iceConnectedCtx, iceConnectedCtxCancel := context.WithCancel(context.Background())
 
-		videoTrack, videoTrackErr := webrtc.NewTrackLocalStaticSample(
-			webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264, ClockRate: 90000}, "video", "pion")
-
-		if videoTrackErr != nil {
-			panic(videoTrackErr)
+		videoTrack, err := webrtc.NewTrackLocalStaticSample(
+			webrtc.RTPCodecCapability{MimeType: codec, ClockRate: 90000}, "video", "pion")
+		if utils.HttpNotOk(500, w, "could not start track", err) {
+			iceConnectedCtxCancel()
+			return
 		}
 
-		rtpSender, videoTrackErr := peerConnection.AddTrack(videoTrack)
-		if videoTrackErr != nil {
-			panic(videoTrackErr)
+		rtpSender, err := peerConnection.AddTrack(videoTrack)
+		if utils.HttpNotOk(500, w, "could not add track", err) {
+			iceConnectedCtxCancel()
+			return
 		}
 
 		// Read incoming RTCP packets
@@ -66,7 +68,7 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 		}()
 
 		go func() {
-			stream, _, err := player.Play()
+			stream, _, err := l.PlayTitle(req.Stream.Name)
 
 			if utils.HttpNotOk(400, w, "could not stream contents", err) {
 				return
@@ -111,7 +113,7 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 		})
 
 		offer := webrtc.SessionDescription{}
-		decoded, err := base64.StdEncoding.DecodeString(req.SDP)
+		decoded, err := base64.StdEncoding.DecodeString(req.Sdp)
 		if utils.HttpNotOk(400, w, "could not decode sdp", err) {
 			return
 		}
@@ -148,8 +150,8 @@ func VideoEndpoint(player video.Player) func(http.ResponseWriter, *http.Request)
 		if utils.HttpNotOk(400, w, "could not get local description", err) {
 			return
 		}
-		res.SDP = base64.StdEncoding.EncodeToString(marshalled)
+		res.Sdp = base64.StdEncoding.EncodeToString(marshalled)
 
-		_ = json.NewEncoder(w).Encode(res)
+		utils.LogIf(json.NewEncoder(w).Encode(res))
 	}
 }

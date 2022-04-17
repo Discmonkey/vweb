@@ -29,11 +29,15 @@ components:
     Stream:
       type: object
       properties:
-        address:
-          $ref: '#/components/schemas/Address'
         name:
           type: string
-
+    Session:
+      type: object
+      properties:
+        stream:
+          $ref: '#/components/schemas/Stream'
+        sdp:
+          type: string
     Source:
       type: object
       properties:
@@ -54,7 +58,15 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Stream'
-
+  /play:
+    post:
+      responses:
+        200:
+          description: returns a matching stream, with its own sdp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream'
   /source:
     post:
       requestBody:
