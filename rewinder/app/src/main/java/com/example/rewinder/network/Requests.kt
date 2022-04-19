@@ -17,10 +17,6 @@ fun create_source(ip: IP, source: Source): Address {
 
     try {
         val response: InputStream = BufferedInputStream(urlConnection.inputStream)
-        IOUtils.toString(inputStream, "UTF-8")
-        val jsonObject = jsonParser.parse(
-            InputStreamReader(inputStream, "UTF-8")
-        )
     } finally {
         urlConnection.disconnect()
     }

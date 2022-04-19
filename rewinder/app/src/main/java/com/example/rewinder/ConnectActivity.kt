@@ -1,6 +1,7 @@
 package com.example.rewinder
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -22,7 +23,8 @@ class ConnectActivity : AppCompatActivity() {
         submit.setOnClickListener {
             val ip = text.text.toString()
             val source = Source()
+
+            Log.e("test", source.toString())
         }
     }
-
 }
