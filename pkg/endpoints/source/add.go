@@ -44,6 +44,7 @@ func get(l *video.Library, w http.ResponseWriter) {
 
 func Source(l *video.Library) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
+		log.Println("source")
 		switch req.Method {
 		case "GET":
 			get(l, w)
