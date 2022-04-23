@@ -47,6 +47,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:1.0.0-alpha27"
     implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
 }
