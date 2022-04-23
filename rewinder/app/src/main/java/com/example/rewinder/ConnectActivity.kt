@@ -1,7 +1,6 @@
 package com.example.rewinder
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -9,8 +8,9 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rewinder.network.createSource
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import com.github.kittinunf.result.Result
+import io.swagger.server.models.Address
+import net.pwall.json.parseJSON
 
 class ConnectActivity : AppCompatActivity() {
 
@@ -29,10 +29,18 @@ class ConnectActivity : AppCompatActivity() {
         val status = findViewById<TextView>(R.id.status)
 
         submit.setOnClickListener {
-            runBlocking {
-                launch {
-                    val ip = text.text.toString()
-                    createSource(ip)
+            val ip = text.text.toString()
+            createSource(ip).responseString {
+                    _, _, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        println(result.getException())
+                    }
+
+                    is Result.Success -> {
+                        val address: Address? = result.get().parseJSON()
+                        println(address)
+                    }
                 }
             }
         }
