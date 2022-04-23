@@ -1,5 +1,6 @@
 package com.example.rewinder
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -11,11 +12,13 @@ import com.example.rewinder.network.createSource
 import com.github.kittinunf.result.Result
 import io.swagger.server.models.Address
 import net.pwall.json.parseJSON
+import net.pwall.json.stringifyJSON
+
 
 class ConnectActivity : AppCompatActivity() {
 
     private var permissionManager = PermissionManager()
-
+    private var address: Address? = null;
     @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,17 +34,28 @@ class ConnectActivity : AppCompatActivity() {
         submit.setOnClickListener {
             val ip = text.text.toString()
             createSource(ip).responseString {
-                    _, _, result ->
-                when (result) {
-                    is Result.Failure -> {
-                        println(result.getException())
-                    }
+                _, _, result ->
+                    when (result) {
+                        is Result.Failure -> {
+                            println(result.getException())
+                        }
 
-                    is Result.Success -> {
-                        val address: Address? = result.get().parseJSON()
-                        println(address)
+                        is Result.Success -> {
+                            this.address = result.get().parseJSON()
+                        }
                     }
-                }
+            }
+        }
+
+        stream.setOnClickListener {
+            if (this.address == null) {
+                Toast.makeText(this,
+                    "server not configured",
+                    Toast.LENGTH_SHORT).show()
+            } else {
+                val intent = Intent(baseContext, StreamActivity::class.java)
+                intent.putExtra("streamAddress", this.address.stringifyJSON())
+                startActivity(intent)
             }
         }
     }

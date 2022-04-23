@@ -1,45 +1,43 @@
 package com.example.rewinder
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.swagger.server.models.Address
+import net.pwall.json.parseJSON
 import java.io.BufferedOutputStream
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 
 class StreamActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
-    private var udpOutputStream = UDPOutputStream("192.168.1.11", 9000)
     @RequiresApi(32)
-    private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
-        UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
     private var permissionManager = PermissionManager()
-
     @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stream)
 
+        val address: Address? = intent.getStringExtra("streamAddress")?.parseJSON()
         // Request camera permissions
-        if (permissionManager.allPermissionsGranted(baseContext)) {
-            startCamera()
+        if (address != null && permissionManager.allPermissionsGranted(baseContext)) {
+            val udpOutputStream = UDPOutputStream(address.ip, address.port)
+            val encoder  = H264Encoder(BufferedOutputStream(udpOutputStream),
+                UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
+            startCamera(encoder)
         } else {
-            permissionManager.requestPermissions(this);
+            startActivity(Intent(baseContext, ConnectActivity::class.java))
         }
     }
 
     @RequiresApi(32)
-    private fun startCamera() {
+    private fun startCamera(encoder: H264Encoder) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener(Runnable {
@@ -86,23 +84,4 @@ class StreamActivity : AppCompatActivity() {
         super.onDestroy()
         cameraExecutor.shutdown()
     }
-
-    @RequiresApi(32)
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PermissionManager.REQUEST_CODE_PERMISSIONS) {
-            if (permissionManager.allPermissionsGranted(baseContext)) {
-                startCamera()
-            } else {
-                Toast.makeText(this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        }
-    }
-
-
 }
