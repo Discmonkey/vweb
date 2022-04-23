@@ -23,6 +23,7 @@ class StreamActivity : AppCompatActivity() {
     @RequiresApi(32)
     private var encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
         UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
+    private var permissionManager = PermissionManager()
 
     @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,15 +31,11 @@ class StreamActivity : AppCompatActivity() {
         setContentView(R.layout.activity_stream)
 
         // Request camera permissions
-        if (allPermissionsGranted()) {
+        if (permissionManager.allPermissionsGranted(baseContext)) {
             startCamera()
         } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+            permissionManager.requestPermissions(this);
         }
-    }
-
-    private fun startStream() {
     }
 
     @RequiresApi(32)
@@ -79,15 +76,10 @@ class StreamActivity : AppCompatActivity() {
 
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                Log.e("StreamActivity", "Use case binding failed", exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onDestroy() {
@@ -100,8 +92,8 @@ class StreamActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
+        if (requestCode == PermissionManager.REQUEST_CODE_PERMISSIONS) {
+            if (permissionManager.allPermissionsGranted(baseContext)) {
                 startCamera()
             } else {
                 Toast.makeText(this,
@@ -112,9 +104,5 @@ class StreamActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        private const val TAG = "CameraXBasic"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-    }
+
 }

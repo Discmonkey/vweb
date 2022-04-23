@@ -10,27 +10,30 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 
-
 // add source to server, and return the address to which we want to stream
 suspend fun createSource(address: String): Address {
 
     runCatching {
-        val url  = URL("$address/source")
-        val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
-        val out = BufferedOutputStream(urlConnection.outputStream)
-        val writer = BufferedWriter(OutputStreamWriter(out, "UTF-8"))
-        writer.write(Source("video/H264").toString())
-        writer.flush()
-        writer.close()
-        out.close()
+        val url = URL("http://192.168.1.10/source")
+        val postData = "{\"codec\":\"video/H264\"}"
 
-        urlConnection.connect()
+        val conn = url.openConnection()
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.setRequestProperty("Content-Length", postData.length.toString())
 
-        val input  = BufferedInputStream(urlConnection.inputStream)
-        val reader = BufferedReader(InputStreamReader(input, "UTF-8"))
-        val returns = JSONObject(JSONTokener(reader.toString()))
+        val stream = conn.getOutputStream();
 
-        Log.e("returned:", returns.toString())
+        DataOutputStream(stream).use {
+            it.writeBytes(postData)
+        }
+        println("here")
+        BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
+            var line: String?
+            while (bf.readLine().also { line = it } != null) {
+                println(line)
+            }
+        }
     }
 
     return Address("hello", 3000)
