@@ -18,6 +18,7 @@
 
     <com.google.android.material.slider.Slider
         android:layout_width="match_parent"
+        android:id="@+id/zoom"
         android:layout_height="wrap_content"
         android:valueFrom="0.0"
         android:valueTo="100.0"

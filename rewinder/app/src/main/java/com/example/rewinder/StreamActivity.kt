@@ -9,6 +9,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import com.google.android.material.slider.Slider
 import io.swagger.server.models.Address
 import net.pwall.json.parseJSON
 import java.io.BufferedOutputStream
@@ -68,11 +69,13 @@ class StreamActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
 
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, encoderPreview
-                )
-
-
+                val camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, encoderPreview)
+                println("got here")
+                findViewById<Slider>(R.id.zoom).addOnChangeListener {
+                        _, value, _ -> camera.cameraControl.setLinearZoom(value / 100)
+                }
+//
             } catch (exc: Exception) {
                 Log.e("StreamActivity", "Use case binding failed", exc)
             }
