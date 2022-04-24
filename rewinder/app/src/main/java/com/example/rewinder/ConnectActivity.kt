@@ -42,6 +42,7 @@ class ConnectActivity : AppCompatActivity() {
 
                         is Result.Success -> {
                             this.address = result.get().parseJSON()
+                            this.address = Address(ip, this.address!!.port)
                         }
                     }
             }

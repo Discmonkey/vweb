@@ -25,7 +25,7 @@ func VideoEndpoint(l *video.Library) func(http.ResponseWriter, *http.Request) {
 		}
 
 		codec, err := l.DescribeTitle(req.Stream.Name)
-		if utils.HttpNotOk(404, w, err.Error(), err) {
+		if utils.HttpNotOk(404, w, "stream not found", err) {
 			return
 		}
 
