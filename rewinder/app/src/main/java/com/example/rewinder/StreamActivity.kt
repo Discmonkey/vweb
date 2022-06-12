@@ -71,11 +71,10 @@ class StreamActivity : AppCompatActivity() {
                 // Bind use cases to camera
                 val camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, encoderPreview)
-                println("got here")
-                findViewById<Slider>(R.id.zoom).addOnChangeListener {
-                        _, value, _ -> camera.cameraControl.setLinearZoom(value / 100)
+                findViewById<Slider>(R.id.zoom).addOnChangeListener { _, value, _ ->
+                    camera.cameraControl.setLinearZoom(value / 100)
+                    println(camera.cameraInfo.sensorRotationDegrees)
                 }
-//
             } catch (exc: Exception) {
                 Log.e("StreamActivity", "Use case binding failed", exc)
             }
