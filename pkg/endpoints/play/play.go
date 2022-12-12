@@ -69,7 +69,6 @@ func VideoEndpoint(l *video.Library) func(http.ResponseWriter, *http.Request) {
 
 		go func() {
 			stream, _, err := l.PlayTitle(req.Stream.Name)
-
 			if utils.HttpNotOk(400, w, "could not stream contents", err) {
 				return
 			}

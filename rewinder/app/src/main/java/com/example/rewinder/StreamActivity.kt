@@ -1,6 +1,7 @@
 package com.example.rewinder
 
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutorService
 class StreamActivity : AppCompatActivity() {
     @RequiresApi(32)
     private var permissionManager = PermissionManager()
+    private var encoder: H264Encoder? = null;
     @RequiresApi(32)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +30,9 @@ class StreamActivity : AppCompatActivity() {
         // Request camera permissions
         if (address != null && permissionManager.allPermissionsGranted(baseContext)) {
             val udpOutputStream = UDPOutputStream(address.ip, address.port)
-            val encoder  = H264Encoder(BufferedOutputStream(udpOutputStream),
+            encoder = H264Encoder(BufferedOutputStream(udpOutputStream),
                 UDPWriterCallback(BufferedOutputStream(udpOutputStream)))
-            startCamera(encoder)
+            startCamera(encoder!!)
         } else {
             startActivity(Intent(baseContext, ConnectActivity::class.java))
         }
@@ -60,9 +62,7 @@ class StreamActivity : AppCompatActivity() {
                     )
                 }
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
@@ -81,7 +81,11 @@ class StreamActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    @RequiresApi(Build.VERSION_CODES.S_V2)
     override fun onDestroy() {
+        Log.i("S", "destroy called")
+        encoder?.close()
+        encoder = null
         super.onDestroy()
     }
 }
