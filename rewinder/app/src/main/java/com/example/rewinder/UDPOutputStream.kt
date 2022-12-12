@@ -25,7 +25,7 @@ class UDPOutputStream(address: String, port : Int) : OutputStream() {
         var running = true
         override fun run() {
             Log.d("thread", Thread.currentThread().name)
-            val ipv4 = Inet4Address.getByName(address) as Inet4Address
+            val ipv4 = Inet4Address.getByName(address)
             val socket = DatagramSocket()
             socket.connect(ipv4, port)
 
@@ -39,7 +39,6 @@ class UDPOutputStream(address: String, port : Int) : OutputStream() {
             socket.close()
         }
     }
-
 
     override fun write(p0: Int) {
         Log.d("udp writer", "int write called, not currently supported")

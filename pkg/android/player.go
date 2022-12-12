@@ -24,11 +24,11 @@ func (p *Player) Stop() {
 	}
 }
 
-func (p Player) Type() video.Type {
+func (p *Player) Type() video.Type {
 	return video.H264
 }
 
-func (p Player) Play() (chan video.Frame, context.CancelFunc, error) {
+func (p *Player) Play() (chan video.Frame, context.CancelFunc, error) {
 	out := make(chan video.Frame)
 
 	select {

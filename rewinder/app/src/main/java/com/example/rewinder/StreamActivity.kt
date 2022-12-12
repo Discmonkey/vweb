@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService
 
 
 class StreamActivity : AppCompatActivity() {
-    private lateinit var cameraExecutor: ExecutorService
     @RequiresApi(32)
     private var permissionManager = PermissionManager()
     @RequiresApi(32)
@@ -84,6 +83,5 @@ class StreamActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExecutor.shutdown()
     }
 }

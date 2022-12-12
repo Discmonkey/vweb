@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
+import android.provider.MediaStore.Audio.Media
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.RequiresApi
@@ -22,13 +23,16 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     private val mediaCodec: MediaCodec = MediaCodec.createEncoderByType("video/avc")
     private var inputSurface: Surface? = null;
     init {
-        val mediaFormat = MediaFormat.createVideoFormat("video/avc", 1920, 1080)
+        val width = 640
+        val height = 360
+        val mediaFormat = MediaFormat.createVideoFormat("video/avc", width, height)
         mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE,
             MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 10)
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3 * 8)
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5)
         mediaFormat.setString(MediaFormat.KEY_LATENCY,
             MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)
         mediaCodec.setCallback(callback)

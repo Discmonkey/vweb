@@ -18,7 +18,7 @@
     </v-row>
     <v-row class="text-center">
       <v-col cols="12">
-        <video-player v-if="playing" :name="name"></video-player>
+        <video-player v-if="playing" :title="name"></video-player>
       </v-col>
     </v-row>
   </v-container>
@@ -38,8 +38,9 @@
       }
     },
     async mounted() {
-      const videos: [Source]= (await axios.get("/source")).data;
+      const videos: [Source] = (await axios.get("/source")).data;
       videos.forEach((item: Source) => {
+        console.log(item);
         // @ts-ignore
         this.videos.push(item.name);
       })

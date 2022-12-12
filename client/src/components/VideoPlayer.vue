@@ -14,7 +14,7 @@ const iceServers = [
 ]
 export default {
   name: "VideoPlayer",
-  props: [name],
+  props: ["title"],
   data: () => (
     {
       pc: new RTCPeerConnection({
@@ -27,12 +27,14 @@ export default {
     this.pc.addTransceiver('video', {'direction': 'sendrecv'});
     this.pc.addTransceiver('audio', {'direction': 'sendrecv'})
     const offer = await this.pc.createOffer();
+    console.log(this.title);
     const response = await axios.post("play", {
-      stream: {name: this.url},
+      stream: {name: this.title},
       sdp: btoa(JSON.stringify(offer))
     });
 
     this.pc.ontrack = (event) => {
+      console.log(event)
       this.$refs.video.srcObject = event.streams[0];
     }
 

@@ -11,7 +11,7 @@ fun createSource(ip: String): Request {
             "name" : "max's phone"
         }
     """
-    return "http://$ip:3000/source"
+    return "http://192.168.1.10:3000/source"
         .httpPost()
         .body(bodyJson)
 }
