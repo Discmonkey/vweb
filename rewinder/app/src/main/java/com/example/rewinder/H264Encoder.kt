@@ -25,14 +25,15 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     init {
         val width = 640
         val height = 360
+        val fps = 30
         val mediaFormat = MediaFormat.createVideoFormat("video/avc", width, height)
         mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE,
             MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3 * 8)
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3 * 8 * 30)
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
         mediaFormat.setString(MediaFormat.KEY_LATENCY,
             MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)
         mediaCodec.setCallback(callback)
