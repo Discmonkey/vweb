@@ -5,3 +5,14 @@ models:
 
 .dockerignore: client/.gitignore rewinder/.gitignore .gitignore
 	scripts/gen_docker_ignore.sh
+
+.PHONY: server_image
+server_image:
+	docker build . -f build/server.Dockerfile -t vweb
+
+bin/server:
+	mkdir -p bin
+	go build -o bin/server cmd/http_server/server.go
+
+client/dist:
+	cd client && yarn build

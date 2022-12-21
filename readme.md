@@ -2,6 +2,6 @@
 
 ## An open source streaming service
 
-- Built on ffmpeg and webrtc (pion)
-- Stream videos from multiple sources (files, webcams, android camera)
-- To multiple clients (webrtc based web player)
+Stream from an android device or a network camera and view the stream on N clients in your browser.
+
+## Quick Start Instructions

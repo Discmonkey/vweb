@@ -1,7 +1,8 @@
-FROM ubuntu:20.04
-
+FROM ubuntu:20.04 as staging
+# skip all interactive prompts for installs
+ARG DEBIAN_FRONTEND=noninteractive
 # install git for downloading go dependencies
-RUN apt-get update && apt-get install -y git gcc openjdk-8-jre make
+RUN apt-get update && apt-get install -y git gcc openjdk-11-jre make
 
 # major dependencies are vendored in the project and extracted here
 COPY third_party /third_party
@@ -36,24 +37,20 @@ COPY internal ./internal
 # client source
 COPY client ./client
 # app source
-COPY rewinder/app/src/main/java/com ./rewinder/app/src/main/java/com
 
 COPY makefile ./makefile
-COPY swagger.yaml ./swagger.yaml
+COPY api ./api
 # build the frontend
 
-RUN mkdir third_party && mv /third_party/swagger-codegen-cli-3.0.20.jar third_party/swagger-codegen-cli-3.0.20.jar
+RUN mkdir third_party && mv /third_party/openapi third_party/openapi
 RUN make models
-RUN cd pkg/www/retext && npm run build
-
-# build the backend
-RUN mkdir -p bin && go build -o bin/server cmd/server/main.go
+RUN make client/dist
+RUN make bin/server
 
 FROM ubuntu:20.04 as deploy
+COPY --from=staging /vweb/bin/server /vweb/bin/server
+COPY --from=staging /vweb/client/dist /vweb/client/dist
 
-COPY --from=staging /retext/bin/server /retext/bin/server
-COPY --from=staging /retext/pkg/www/retext/dist /retext/pkg/www/retext/dist
-
-WORKDIR /retext
+WORKDIR /vweb
 
 CMD ["./bin/server"]

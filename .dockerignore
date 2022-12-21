@@ -19,7 +19,7 @@ client/*.njsproj
 client/*.sln
 client/*.sw?
 rewinder/*.iml
-rewinder/gradle
+rewinder/.gradle/
 rewinder/local.properties
 rewinder/.idea/caches
 rewinder/.idea/libraries
