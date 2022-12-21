@@ -1,6 +1,4 @@
 .idea
-/internal/ffmpeg/c/build
-internal/ffmpeg/rust/packets/target/
 pkg/swagger
 rewinder/app/src/main/java/io
 client/src/swagger
