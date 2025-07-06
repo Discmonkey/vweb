@@ -33,7 +33,7 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 150)
         mediaFormat.setString(MediaFormat.KEY_LATENCY,
             MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)
         mediaCodec.setCallback(callback)
@@ -79,7 +79,6 @@ class H264Encoder(private val outputStream: BufferedOutputStream,
     }
 
     override fun onSurfaceRequested(request: SurfaceRequest) {
-        Log.d("onSurfaceRequested", "called")
         getSurface()?.let { request.provideSurface(it, SimpleExecutor(), SimpleConsumer()) }
         this.start()
     }

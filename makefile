@@ -8,7 +8,7 @@ models:
 
 .PHONY: server_image
 server_image:
-	docker build . -f build/server.Dockerfile -t vweb
+	docker build . -f build/server.Dockerfile -t vw
 
 bin/server:
 	mkdir -p bin
