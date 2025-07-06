@@ -18,8 +18,8 @@ import net.pwall.json.stringifyJSON
 class ConnectActivity : AppCompatActivity() {
 
     private var permissionManager = PermissionManager()
-    private var address: Address? = null;
-    @RequiresApi(32)
+    private var address: Address? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect)
@@ -37,7 +37,7 @@ class ConnectActivity : AppCompatActivity() {
                 _, _, result ->
                     when (result) {
                         is Result.Failure -> {
-                            println(result.getException())
+                            status.text = result.toString()
                         }
 
                         is Result.Success -> {
@@ -61,7 +61,6 @@ class ConnectActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(32)
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray) {

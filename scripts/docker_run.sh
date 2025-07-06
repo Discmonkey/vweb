@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker run --rm -network host vweb
+docker run --rm --network host vw
